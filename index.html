@@ -43,6 +43,7 @@
   .card.silver{border-top:4px solid var(--bsilver);}.card.silver h3{color:var(--bsilver);}
   .card.bronze{border-top:4px solid var(--bbronze);}.card.bronze h3{color:var(--bbronze);}
   .card.accent{border-top:4px solid var(--gold);}.card.accent h3{color:#9a7020;}
+  .card.compete{border-top:4px solid var(--gold);}.card.compete h3{color:#9a7020;}
   .chk{display:flex;flex-direction:column;gap:8px;}
   .chk label{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--mid);cursor:pointer;line-height:1.5;padding:4px 0;}
   .chk input[type=checkbox]{margin-top:2px;accent-color:var(--blue);flex-shrink:0;width:18px;height:18px;}
@@ -86,9 +87,7 @@
   .note-meta strong{font-size:13px;}
   .note-meta span{font-size:10px;color:var(--light);}
   .note-item p{font-size:12px;color:var(--mid);line-height:1.5;}
-
-  /* ── ON-COURSE STYLES ── */
-  .stage-card{background:#f7f9fc;border:1px solid #c0d0e8;border-radius:10px;padding:12px 14px;margin-bottom:10px;position:relative;}
+  .stage-card{background:#f7f9fc;border:1px solid #c0d0e8;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
   .stage-card.passed{background:#f0f7ff;border-color:#90b8e0;}
   .stage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
   .stage-title{font-size:13px;font-weight:800;color:var(--bbronze);}
@@ -103,17 +102,34 @@
   .nine-hole-row .nh-score{font-weight:800;font-size:13px;}
   .nine-hole-best{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;padding:5px 10px;background:#e8f0fb;border-radius:6px;}
   .sec-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;margin-top:4px;}
-  .sec-label.goldc{color:var(--bgold);}
-  .sec-label.silverc{color:var(--bsilver);}
-  .sec-label.bronzec{color:var(--bbronze);}
+  .sec-label.goldc{color:var(--bgold);}.sec-label.silverc{color:var(--bsilver);}.sec-label.bronzec{color:var(--bbronze);}
   .oc-notes-area{width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;background:#fafafa;min-height:80px;}
   .oc-notes-area:focus{outline:none;border-color:var(--blue);background:white;}
   .btn-sm{padding:7px 14px;font-size:12px;font-weight:700;border-radius:7px;border:none;cursor:pointer;}
-  .btn-sm-g{background:var(--blue);color:white;}
-  .btn-sm-g:hover{background:#122d4f;}
+  .btn-sm-g{background:var(--blue);color:white;}.btn-sm-g:hover{background:#122d4f;}
+
+  /* ── CURRICULUM STYLES ── */
+  .curric-level-tabs{display:flex;gap:0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px;}
+  .curric-level-tab{flex:1;padding:10px 6px;font-size:11px;font-weight:800;border:none;cursor:pointer;transition:all .2s;text-align:center;line-height:1.3;}
+  .curric-skill-card{background:white;border-radius:10px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+  .curric-skill-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;}
+  .curric-skill-header h4{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .curric-skill-body{padding:0 14px 14px;display:none;}
+  .curric-skill-body.open{display:block;}
+  .curric-chevron{font-size:12px;color:var(--light);transition:transform .2s;}
+  .curric-chevron.open{transform:rotate(180deg);}
+  .curric-cell{font-size:12px;color:var(--mid);line-height:1.6;padding:10px 12px;background:#fafafa;border-radius:8px;border-left:3px solid #ddd;white-space:pre-wrap;min-height:48px;}
+  .curric-cell:focus{outline:none;background:#fff;border-left-color:var(--blue);box-shadow:0 0 0 2px rgba(26,63,107,.15);}
+  .curric-cell.bronze-border{border-left-color:var(--bbronze);}
+  .curric-cell.silver-border{border-left-color:var(--bsilver);}
+  .curric-cell.gold-border{border-left-color:var(--bgold);}
+  .curric-cell.compete-border{border-left-color:var(--gold);}
+  .curric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;}
+  .curric-col-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:4px 8px;border-radius:6px;text-align:center;}
+  .curric-save-bar{position:sticky;bottom:0;background:white;border-top:1px solid #eee;padding:10px 0;margin-top:8px;z-index:10;}
 
   @media(min-width:641px){.hdr-text p{display:block;}.hdr-text h1{font-size:17px;}.content{padding:18px 22px;}}
-  @media(max-width:640px){.g2{grid-template-columns:1fr;}.btn-row .btn{min-width:0;}.nine-hole-entry{grid-template-columns:1fr 1fr;}.nine-hole-entry .btn-sm{grid-column:1/-1;}}
+  @media(max-width:640px){.g2{grid-template-columns:1fr;}.btn-row .btn{min-width:0;}.nine-hole-entry{grid-template-columns:1fr 1fr;}.nine-hole-entry .btn-sm{grid-column:1/-1;}.curric-grid{grid-template-columns:1fr 1fr;}.curric-level-tab{font-size:10px;padding:8px 4px;}}
   @media(min-width:900px){.hdr{padding:14px 24px;}}
 </style>
 </head>
@@ -136,6 +152,7 @@
 <div class="tabs">
   <div class="tab active" onclick="show('briefing',this)">📋 Coach Briefing</div>
   <div class="tab" onclick="show('planner',this)">🗓️ Term Planner</div>
+  <div class="tab" onclick="show('curriculum',this)">📚 Curriculum</div>
   <div class="tab" onclick="show('profiling',this)">👦 Junior Profiling</div>
   <div class="tab" onclick="show('tracking',this)">📊 Progress Tracking</div>
 </div>
@@ -224,6 +241,43 @@
   </div>
 </div>
 
+<!-- CURRICULUM -->
+<div id="curriculum" class="panel">
+  <div class="stitle">Junior <span>Curriculum</span></div>
+  <div class="sdesc">Skill-by-skill curriculum across all four development levels. Click any content to edit — syncs to all coaches instantly.</div>
+  <p class="edit-hint">✏️ Click any cell to edit · <span>syncs live to all coaches</span></p>
+
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:11px;font-weight:700;color:var(--mid);">VIEW:</span>
+    <button onclick="setCurricView('grid')" id="curric-view-grid" class="btn-sm btn-sm-g" style="font-size:11px;">⊞ All Levels Side by Side</button>
+    <button onclick="setCurricView('focus')" id="curric-view-focus" class="btn-sm" style="font-size:11px;background:#eee;color:#555;border:none;">🔍 One Level Focus</button>
+  </div>
+
+  <!-- GRID VIEW -->
+  <div id="curric-view-grid-panel">
+    <div id="curric-skill-accordion"></div>
+    <div class="curric-save-bar">
+      <button class="btn btn-g" style="width:100%;font-size:13px;" onclick="saveCurriculum()">💾 Save Curriculum Changes</button>
+      <div class="flash" id="curric-flash" style="margin-top:6px;">✓ Curriculum saved and synced to all coaches!</div>
+    </div>
+  </div>
+
+  <!-- FOCUS VIEW -->
+  <div id="curric-view-focus-panel" style="display:none;">
+    <div class="curric-level-tabs">
+      <button class="curric-level-tab" id="cltab-bronze" onclick="showCurricLevel('bronze')" style="background:#f5ece0;color:var(--bbronze);border-bottom:3px solid var(--bbronze);">🥉 Bronze<br><span style="font-size:9px;font-weight:400;">Fundamentals</span></button>
+      <button class="curric-level-tab" id="cltab-silver" onclick="showCurricLevel('silver')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥈 Silver<br><span style="font-size:9px;font-weight:400;">Learn to Play</span></button>
+      <button class="curric-level-tab" id="cltab-gold" onclick="showCurricLevel('gold')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥇 Gold<br><span style="font-size:9px;font-weight:400;">Train to Play</span></button>
+      <button class="curric-level-tab" id="cltab-compete" onclick="showCurricLevel('compete')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🏆 Compete<br><span style="font-size:9px;font-weight:400;">Learn to Compete</span></button>
+    </div>
+    <div id="curric-focus-content"></div>
+    <div class="curric-save-bar">
+      <button class="btn btn-g" style="width:100%;font-size:13px;" onclick="saveCurriculum()">💾 Save Curriculum Changes</button>
+      <div class="flash" id="curric-flash2" style="margin-top:6px;">✓ Curriculum saved and synced to all coaches!</div>
+    </div>
+  </div>
+</div>
+
 <!-- PROFILING -->
 <div id="profiling" class="panel">
   <div class="stitle">Junior <span>Profiling</span></div>
@@ -251,8 +305,6 @@
       <div id="oc-section" style="margin-top:4px;"></div>
     </div>
     <div class="gap">
-
-      <!-- SKILL DEVELOPMENT -->
       <div class="card silver">
         <h3>⛳ Skill Development</h3>
         <p style="font-size:10px;color:var(--mid);margin-bottom:10px;">Record start and end of term measurements for each metric.</p>
@@ -267,7 +319,7 @@
         <div style="font-size:11px;font-weight:800;color:var(--bsilver);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">🎯 Short Game — 9 Hole Challenge</div>
         <p style="font-size:10px;color:var(--mid);margin-bottom:6px;">Scoring: Holed=4pts · 0–3ft=3pts · 3–6ft=2pts · 6–12ft=1pt · 12ft+=0pts · Max 36pts</p>
         <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px;">
-          <thead><tr><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">#</th><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">Shot</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">Start<br><span style="font-weight:400;">(0–4)</span></th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">End<br><span style="font-weight:400;">(0–4)</span></th></tr></thead>
+          <thead><tr><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">#</th><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">Shot</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">Start (0–4)</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">End (0–4)</th></tr></thead>
           <tbody>
             <tr><td style="padding:3px 6px;font-size:10px;color:var(--mid);">1</td><td style="padding:3px 6px;font-size:11px;">Fringe &lt;10m</td><td style="padding:3px 2px;"><input type="number" id="j-sg1-s" min="0" max="4" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-sg1-e" min="0" max="4" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
             <tr style="background:#f9f9f9;"><td style="padding:3px 6px;font-size:10px;color:var(--mid);">2</td><td style="padding:3px 6px;font-size:11px;">Fringe 10–20m</td><td style="padding:3px 2px;"><input type="number" id="j-sg2-s" min="0" max="4" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-sg2-e" min="0" max="4" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
@@ -283,9 +335,9 @@
           </tbody>
         </table>
         <div style="font-size:11px;font-weight:800;color:var(--bsilver);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">🕳️ Putting — 9 Hole Competition</div>
-        <p style="font-size:10px;color:var(--mid);margin-bottom:6px;">Record total putts for each hole. Lower score = better. Total out of 9 holes.</p>
+        <p style="font-size:10px;color:var(--mid);margin-bottom:6px;">Record total putts for each hole. Lower score = better.</p>
         <table style="width:100%;border-collapse:collapse;font-size:11px;">
-          <thead><tr><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">#</th><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">Distance</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">Start<br><span style="font-weight:400;">(putts)</span></th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">End<br><span style="font-weight:400;">(putts)</span></th></tr></thead>
+          <thead><tr><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">#</th><th style="text-align:left;padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;">Distance</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">Start (putts)</th><th style="padding:4px 6px;background:#e0e7ef;color:var(--bsilver);font-size:10px;text-align:center;">End (putts)</th></tr></thead>
           <tbody>
             <tr><td style="padding:3px 6px;font-size:10px;color:var(--mid);">1</td><td style="padding:3px 6px;font-size:11px;">3 ft</td><td style="padding:3px 2px;"><input type="number" id="j-pt1-s" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-pt1-e" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
             <tr style="background:#f9f9f9;"><td style="padding:3px 6px;font-size:10px;color:var(--mid);">2</td><td style="padding:3px 6px;font-size:11px;">4 ft</td><td style="padding:3px 2px;"><input type="number" id="j-pt2-s" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-pt2-e" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
@@ -297,12 +349,10 @@
             <tr style="background:#f9f9f9;"><td style="padding:3px 6px;font-size:10px;color:var(--mid);">8</td><td style="padding:3px 6px;font-size:11px;">20 ft</td><td style="padding:3px 2px;"><input type="number" id="j-pt8-s" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-pt8-e" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
             <tr><td style="padding:3px 6px;font-size:10px;color:var(--mid);">9</td><td style="padding:3px 6px;font-size:11px;">30 ft</td><td style="padding:3px 2px;"><input type="number" id="j-pt9-s" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td><td style="padding:3px 2px;"><input type="number" id="j-pt9-e" min="0" placeholder="—" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:3px 4px;font-size:11px;text-align:center;background:#fafafa;"></td></tr>
             <tr style="background:#e0e7ef;font-weight:800;"><td colspan="2" style="padding:5px 6px;font-size:11px;color:var(--bsilver);">Total Putts (9 holes)</td><td style="padding:5px 6px;text-align:center;font-size:12px;font-weight:800;color:var(--bsilver);" id="j-pt-total-s">—</td><td style="padding:5px 6px;text-align:center;font-size:12px;font-weight:800;color:var(--bsilver);" id="j-pt-total-e">—</td></tr>
-            <tr style="background:#e0e7ef;"><td colspan="2" style="padding:4px 6px;font-size:11px;color:var(--bsilver);font-weight:700;">Change <span style="font-weight:400;font-size:10px;">(lower = better)</span></td><td colspan="2" style="padding:4px 6px;text-align:center;font-size:12px;font-weight:800;" id="j-pt-chg">—</td></tr>
+            <tr style="background:#e0e7ef;"><td colspan="2" style="padding:4px 6px;font-size:11px;color:var(--bsilver);font-weight:700;">Change (lower = better)</td><td colspan="2" style="padding:4px 6px;text-align:center;font-size:12px;font-weight:800;" id="j-pt-chg">—</td></tr>
           </tbody>
         </table>
       </div>
-
-      <!-- PHYSICAL LITERACY -->
       <div class="card bronze">
         <h3>💪 Physical Literacy <span style="font-size:10px;font-weight:400;color:var(--mid);">TPI Measures</span></h3>
         <p style="font-size:10px;color:var(--mid);margin-bottom:10px;">Record start and end of term measurements for each TPI test.</p>
@@ -318,8 +368,6 @@
           </tbody>
         </table>
       </div>
-
-      <!-- MENTAL GAME -->
       <div class="card gold" style="grid-column:1/-1;">
         <h3>🧠 Mental Game</h3>
         <div class="g2">
@@ -329,13 +377,12 @@
           </div>
           <div>
             <p style="font-size:11px;font-weight:700;color:var(--bgold);margin-bottom:8px;">Mental Skills Reflection</p>
-            <div class="fr"><label>What did I do today from a mental skills perspective (thoughts, behaviours, feelings) that I would like to do more of?</label><textarea id="j-mental-more" rows="2" placeholder="e.g. Staying calm after a bogey..."></textarea></div>
-            <div class="fr"><label>What from a mental skills perspective would I like to do less of or stop altogether?</label><textarea id="j-mental-less" rows="2" placeholder="e.g. Negative self-talk after bad shots..."></textarea></div>
+            <div class="fr"><label>What did I do today from a mental skills perspective that I would like to do more of?</label><textarea id="j-mental-more" rows="2" placeholder="e.g. Staying calm after a bogey..."></textarea></div>
+            <div class="fr"><label>What from a mental skills perspective would I like to do less of?</label><textarea id="j-mental-less" rows="2" placeholder="e.g. Negative self-talk after bad shots..."></textarea></div>
             <div class="fr"><label>What did I learn about myself today?</label><textarea id="j-mental-learn" rows="2" placeholder="e.g. I perform better when I have a clear routine..."></textarea></div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
   <div class="btn-row"><button class="btn btn-g" onclick="saveProfile()">💾 Save & Share Profile</button><button class="btn btn-o" onclick="clearProfileForm()">↺ Clear</button></div>
@@ -389,9 +436,79 @@ const CLUB='stm';
 const SURL='https://dejmkfbzbqtvqgxtwipv.supabase.co';
 const SKEY='sb_publishable_zLIVnPYNxlyyAsYrkq9LJg_ztRZaJFp';
 const sb=supabase.createClient(SURL,SKEY);
-
-// All keys prefixed with club ID to keep data separate
 function k(key){return `${CLUB}_${key}`;}
+
+// ── CURRICULUM DATA ──
+const CURRIC_SKILLS=[
+  {key:'grip',icon:'🤝',label:'Grip',
+    bronze:'Hands Together\nPalms Facing',
+    silver:'Functional Grip (Weak / Neutral / Strong)\nOverlap / Interlock',
+    gold:'Established functional grip pattern\nVariations for shot patterns (short game)',
+    compete:'Grip variations to control flight and shape'},
+  {key:'alignment',icon:'🎯',label:'Alignment & Stance',
+    bronze:'Stance width — shoulder/hip width apart\nBall position in middle of feet\nBall under sternum',
+    silver:'Aiming Club face and Body\nBall position changes for different clubs and shots',
+    gold:'Fully developed Pre-Shot Routine\nBall position manipulation to change flight',
+    compete:'Advanced pre-shot routine\nBall position to influence flight and shape'},
+  {key:'posture',icon:'🧍',label:'Posture',
+    bronze:'Developed Hip Hinge Pattern\nSoft Knees\nArms Hang Under Shoulders',
+    silver:'Athletic Posture\nEngaged Core',
+    gold:'Established, consistent posture patterns\nLooks like a golfer',
+    compete:'Posture variations for different shots and lies'},
+  {key:'balance',icon:'⚖️',label:'Balance',
+    bronze:'Neutral Balanced Set Up\nUnderstand 50/50 Concept\nFinish in Balanced Position\nSquash The Bug',
+    silver:'50/50 weight distribution awareness\nSlopes — Uphill / Downhill set up',
+    gold:'Manipulate balance as required for the shot\nWeight Transfer and Pressure',
+    compete:'Full balance and pressure control in all situations'},
+  {key:'etiquette',icon:'🎩',label:'Rules, Safety & Etiquette',
+    bronze:'Learn and Follow Safety Rules of the Program\nQuiet when others are hitting\nGolf Terminology — Tee, bunker, fairway, green, FORE, rough, penalty area\nTee Ground Rules',
+    silver:'Ball Marking Rules and Procedures\nLearn where to stand when playing\nRaking Bunkers\nFixing Pitch Marks\nPenalty Areas Rules and Procedures',
+    gold:'Take on leadership roles in program\nAssist with younger golfers in etiquette areas',
+    compete:'Full knowledge and application of Rules of Golf'},
+  {key:'putting',icon:'🕳️',label:'Putting',
+    bronze:'Head and Body Still during stroke\nEven Length Back and Through — Hold The Finish\nRoll the Ball end on end — keeping the line on top',
+    silver:'Refine Distance Control (inside 3ft radius from various distances)\nGood at short putting 3ft — 9/10\nGood knowledge of slopes and how they influence the roll\nOne Step At A Time Challenge 10 steps+',
+    gold:'TPI Spiral Challenge\n18 Hole speed/tee challenge 2–10ft\nProject 1 Putt Level 0–4',
+    compete:'Advanced speed and break control\nHigh-pressure putting under competition conditions'},
+  {key:'chipping',icon:'🏌️',label:'Chipping',
+    bronze:'Contact — Low Point — Ball in the Air\nLand on the Green\nLand on the Green and Stay on the Green\nChip over a target (hurdle) and finish on the Green',
+    silver:'Chip into a Large Target Circle (land or finish)\nChip into Small Target Circle (land or finish)\nFace Adjustments — Lie — Grip — Bounce',
+    gold:'Chip into Large Target Circle around the Hole (finish)\nChip into Small Target Circle around the Hole (finish)\nVariable Slopes\nVariable Lies\nVariable Trajectories\nTPI Baseball Chipping Challenge',
+    compete:'Chip it in 😊\nFull variable lie, slope and trajectory control'},
+  {key:'bunkers',icon:'🏖️',label:'Bunkers',
+    bronze:'Splash Sand onto the Green\nSplash VOLCANO ISLAND Sand onto the Green\nLand Ball on Green\nLand Ball on Green and Finish on the Green',
+    silver:'Land Ball in Large Target Circle\nLand Ball in Small Target Circle\nFace Adjustments — Lie — Grip — Bounce',
+    gold:'Finish the Ball in Large Target Circle around the Hole\nFinish the Ball in Small Target Circle around the Hole\nVariable Lies\nVariable Slopes\nVariable Trajectories\nTPI Bunker Challenge',
+    compete:'6 Ball Bunker Skills Challenge\nFull spin, distance and trajectory control'},
+  {key:'pitching',icon:'🎯',label:'Pitching',
+    bronze:'Using the LOFT to hit the ball in the air\nSwing Length to Control Distance',
+    silver:'Variable Club Options\nSwing Tempo / Energy for Distance Control',
+    gold:'Slopes — Uphill / Downhill\nVariable Trajectories\nTPI Pitching Challenge',
+    compete:'Full distance, trajectory and spin control in all situations'},
+  {key:'longgame',icon:'🏌️',label:'Long Game (Irons & Woods)',
+    bronze:'Low Point Contact — two tee / paint lines drills — Ball in the Air\nCarry v Total Distance\nTempo',
+    silver:'Flight Control — High / Low\nTPI Aussie Rules (Irons) Challenge\nTPI Long Drive Challenge',
+    gold:'Shot Shaping — Draws / Fades (Hooks / Slices)\nHard / Soft — In Between Shots\n9 Shot Windows',
+    compete:'Full 9-shot window mastery\nAdvanced trajectory and shape control on demand'},
+  {key:'oncourse',icon:'🗺️',label:'On Course',
+    bronze:'Course Etiquette\nRules and Procedures\nOperation 36 Levels 1, 2, 3 (25m – 50m – 100m)\n9 Hole Par 3 Course (Max 100m per hole)',
+    silver:'Introduce Longer Modified Course (Boys 4000–5000m / Girls 3000–4500m)\nOperation 36 Level 4–5 (150m – 200m)',
+    gold:'Course Length (Boys 5000–6000m / Girls 4700–5500m) — Mix of tees as required\nSkills Games (3, 4, 5 club — odds / evens)',
+    compete:'TPI PAT Gold Course\nFull competition course management'}
+];
+
+const LEVELS=['bronze','silver','gold','compete'];
+const LEVEL_LABELS={bronze:'🥉 Bronze',silver:'🥈 Silver',gold:'🥇 Gold',compete:'🏆 Compete'};
+const LEVEL_COLORS={
+  bronze:{bg:'#f5ece0',col:'#8b5e2a',border:'#8b5e2a'},
+  silver:{bg:'#e0e7ef',col:'#4a6b8b',border:'#4a6b8b'},
+  gold:{bg:'#d0e4f7',col:'#1a3f6b',border:'#1a3f6b'},
+  compete:{bg:'#fdf3d8',col:'#9a7020',border:'#c9a84c'}
+};
+
+let curricData={};
+let curricView='grid';
+let curricLevel='bronze';
 
 const DEF={
   chk_setup:['All coaches reviewed the Four Pillars & Guiding Principles','Shared coaching language and cues agreed upon','Lead coach assigned to each group','Program coordinator confirmed','Session structure walked through for all groups','Progressive on-course system reviewed for Gold Squad','Equipment inventory confirmed','Venue allocation and tee time bookings made','Safety and safeguarding procedures reviewed','Junior profiles and medical conditions reviewed'],
@@ -409,14 +526,7 @@ const DEF_PLANNER={
 };
 
 const TIER_COLORS={bronze:'#f5ece0',silver:'#e0e7ef',gold:'#d0e4f7'};
-
-const SM_STAGES=[
-  {label:'Stage 1',dist:'50m holes',par:20,holes:5},
-  {label:'Stage 2',dist:'100m holes',par:20,holes:5},
-  {label:'Stage 3',dist:'150m holes',par:20,holes:5},
-  {label:'Stage 4',dist:'200m holes',par:20,holes:5}
-];
-
+const SM_STAGES=[{label:'Stage 1',dist:'50m holes',par:20,holes:5},{label:'Stage 2',dist:'100m holes',par:20,holes:5},{label:'Stage 3',dist:'150m holes',par:20,holes:5},{label:'Stage 4',dist:'200m holes',par:20,holes:5}];
 let ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:''};
 
 async function dbGet(key){try{const{data,error}=await sb.from('jdp_data').select('value').eq('key',k(key)).limit(1).maybeSingle();if(error||!data)return null;return JSON.parse(data.value);}catch(e){return null;}}
@@ -425,144 +535,94 @@ function showSaved(msg,err){const dot=document.getElementById('sync-dot'),txt=do
 function flash(id){const el=document.getElementById(id);if(el){el.style.display='block';setTimeout(()=>el.style.display='none',3000);}}
 function show(id,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active');}
 
-// ── ON-COURSE ──
-function updateOCSection(){
-  const tier=document.getElementById('j-tier').value;
-  const el=document.getElementById('oc-section');
-  if(tier.includes('Gold')) renderGoldOC(el);
-  else if(tier.includes('Silver')) renderSilverOC(el);
-  else renderBronzeOC(el);
+// ── CURRICULUM ──
+function setCurricView(v){
+  curricView=v;
+  document.getElementById('curric-view-grid-panel').style.display=v==='grid'?'block':'none';
+  document.getElementById('curric-view-focus-panel').style.display=v==='focus'?'block':'none';
+  const bg=document.getElementById('curric-view-grid'),bf=document.getElementById('curric-view-focus');
+  bg.style.background=v==='grid'?'var(--blue)':'#eee';bg.style.color=v==='grid'?'white':'#555';bg.style.border='none';
+  bf.style.background=v==='focus'?'var(--blue)':'#eee';bf.style.color=v==='focus'?'white':'#555';bf.style.border='none';
+  if(v==='focus')renderCurricFocus();
 }
 
-function renderGoldOC(el){
-  let html=`<div style="border-top:2px solid #90b8e0;margin-top:14px;padding-top:14px;">
-  <div class="sec-label goldc">⛳ On-Course Assessment — Gold Squad</div>
-  <p style="font-size:10px;color:var(--mid);margin-bottom:12px;">Progressive distance challenge. Each hole is a par 4. Pass = 5 holes in ≤20 shots.</p>`;
-  SM_STAGES.forEach((s,i)=>{
-    const d=ocData.stages[i];
-    const passed=d.passed;
-    html+=`<div class="stage-card${passed?' passed':''}" id="stage-card-${i}">
-      <div class="stage-header">
-        <div class="stage-title">🏌️ ${s.label} — ${s.dist}</div>
-        <span class="stage-badge">${passed?'✅ Passed':'⏳ In Progress'}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div class="fr" style="margin-bottom:0;">
-          <label style="font-size:10px;">5-Hole Score (par ${s.par})</label>
-          <input type="number" id="oc-s${i}-score" value="${d.score||''}" placeholder="e.g. 18" min="5" max="60"
-            style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;"
-            oninput="checkStagePass(${i})">
-        </div>
-        <div class="fr" style="margin-bottom:0;">
-          <label style="font-size:10px;">Date Played</label>
-          <input type="date" id="oc-s${i}-date" value="${d.date||''}"
-            style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;">
-        </div>
-      </div>
-      <div class="fr" style="margin-bottom:6px;">
-        <label style="font-size:10px;">Coach Notes</label>
-        <textarea id="oc-s${i}-notes" rows="2" placeholder="Observations for this stage..." class="oc-notes-area" style="min-height:56px;">${d.notes||''}</textarea>
-      </div>
-      <div class="pass-flag${passed?' passed':''}" id="oc-s${i}-flag">
-        ${passed?`✅ Passed — Score: ${d.score}${d.date?' on '+d.date:''}`:`🎯 Need ≤${s.par} shots to pass`}
-      </div>
-    </div>`;
-  });
-  html+=`<div style="margin-top:14px;">
-    <div class="sec-label goldc">🏅 9-Hole Score Log <span style="font-size:10px;font-weight:400;color:var(--mid);">— open record, any stage</span></div>
-    <p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log every round and track best score over time.</p>
-    <div class="nine-hole-entry">
-      <div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Score</label><input type="number" id="nh-score-input" placeholder="e.g. 38" min="9" max="120" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;"></div>
-      <div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Date</label><input type="date" id="nh-date-input" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;"></div>
-      <button class="btn-sm btn-sm-g" onclick="addNineHole()">+ Log Round</button>
-    </div>
-    <div id="nine-hole-log-list" class="nine-hole-log"></div>
-  </div></div>`;
-  el.innerHTML=html;
-  renderNineHoleLog();
+function getCurricVal(key,level){
+  if(curricData[key]&&curricData[key][level]!==undefined)return curricData[key][level];
+  const def=CURRIC_SKILLS.find(s=>s.key===key);return def?def[level]||'':'';
 }
 
-function checkStagePass(i){
-  const score=parseInt(document.getElementById(`oc-s${i}-score`)?.value);
-  const par=SM_STAGES[i].par;
-  const date=document.getElementById(`oc-s${i}-date`)?.value;
-  const flag=document.getElementById(`oc-s${i}-flag`);
-  const card=document.getElementById(`stage-card-${i}`);
-  const badge=card?.querySelector('.stage-badge');
-  if(!isNaN(score)&&score<=par){
-    ocData.stages[i].passed=true;
-    if(flag){flag.className='pass-flag passed';flag.textContent=`✅ Passed — Score: ${score}${date?' on '+date:''}`;}
-    if(card)card.classList.add('passed');
-    if(badge)badge.textContent='✅ Passed';
-  } else {
-    ocData.stages[i].passed=false;
-    if(flag){flag.className='pass-flag';flag.textContent=`🎯 Need ≤${par} shots to pass`;}
-    if(card)card.classList.remove('passed');
-    if(badge)badge.textContent='⏳ In Progress';
-  }
-}
-
-function addNineHole(){
-  const score=parseInt(document.getElementById('nh-score-input')?.value);
-  const date=document.getElementById('nh-date-input')?.value;
-  if(isNaN(score)||score<9){alert('Please enter a valid 9-hole score.');return;}
-  ocData.nineHoleLogs.unshift({score,date:date||'',id:Date.now()});
-  document.getElementById('nh-score-input').value='';
-  document.getElementById('nh-date-input').value='';
-  renderNineHoleLog();
-}
-
-function removeNineHole(id){
-  ocData.nineHoleLogs=ocData.nineHoleLogs.filter(r=>r.id!==id);
-  renderNineHoleLog();
-}
-
-function renderNineHoleLog(){
-  const el=document.getElementById('nine-hole-log-list');
-  if(!el)return;
-  if(!ocData.nineHoleLogs.length){el.innerHTML='<p style="font-size:11px;color:var(--light);padding:6px 0;">No rounds logged yet.</p>';return;}
-  const best=Math.min(...ocData.nineHoleLogs.map(r=>r.score));
-  let html=`<div class="nine-hole-best">🏆 Best score: ${best}</div>`;
-  ocData.nineHoleLogs.forEach(r=>{
-    html+=`<div class="nine-hole-row">
-      <span>${r.date||'No date'}</span>
-      <span class="nh-score">${r.score} shots</span>
-      <span onclick="removeNineHole(${r.id})" style="cursor:pointer;color:#ccc;font-size:14px;padding:0 4px;" title="Remove">✕</span>
-    </div>`;
-  });
-  el.innerHTML=html;
-}
-
-function renderSilverOC(el){
-  el.innerHTML=`<div style="border-top:2px solid #b0c4d8;margin-top:14px;padding-top:14px;">
-    <div class="sec-label silverc">⛳ On-Course Notes — Silver</div>
-    <p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log notes for any on-course sessions. Schedule these via the Term Planner.</p>
-    <textarea id="oc-silver-notes" class="oc-notes-area" rows="4" placeholder="e.g. Week 3 on-course — focus on course management, juniors struggled with club selection on par 4s...">${ocData.silverNotes||''}</textarea>
-  </div>`;
-}
-
-function renderBronzeOC(el){
-  el.innerHTML=`<div style="border-top:2px solid #d4b896;margin-top:14px;padding-top:14px;">
-    <div class="sec-label bronzec">⛳ On-Course Notes — Bronze</div>
-    <p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log notes for any on-course sessions. Schedule these via the Term Planner.</p>
-    <textarea id="oc-bronze-notes" class="oc-notes-area" rows="4" placeholder="e.g. Introductory on-course visit — juniors engaged well with hole-by-hole format...">${ocData.bronzeNotes||''}</textarea>
-  </div>`;
-}
-
-function collectOCData(){
-  const tier=document.getElementById('j-tier').value;
-  if(tier.includes('Gold')){
-    SM_STAGES.forEach((_,i)=>{
-      ocData.stages[i].score=document.getElementById(`oc-s${i}-score`)?.value||'';
-      ocData.stages[i].date=document.getElementById(`oc-s${i}-date`)?.value||'';
-      ocData.stages[i].notes=document.getElementById(`oc-s${i}-notes`)?.value||'';
+function buildCurricAccordion(){
+  const el=document.getElementById('curric-skill-accordion');el.innerHTML='';
+  CURRIC_SKILLS.forEach(skill=>{
+    const card=document.createElement('div');card.className='curric-skill-card';
+    const hdr=document.createElement('div');hdr.className='curric-skill-header';
+    hdr.innerHTML=`<h4><span>${skill.icon}</span>${skill.label}</h4><span class="curric-chevron" id="chev-${skill.key}">▼</span>`;
+    hdr.onclick=()=>toggleCurricSkill(skill.key);
+    const body=document.createElement('div');body.className='curric-skill-body';body.id=`curric-body-${skill.key}`;
+    let labelsHtml=`<div class="curric-grid" style="margin-bottom:6px;">`;
+    LEVELS.forEach(lv=>{const c=LEVEL_COLORS[lv];labelsHtml+=`<div class="curric-col-label" style="background:${c.bg};color:${c.col};">${LEVEL_LABELS[lv]}</div>`;});
+    labelsHtml+='</div>';
+    let cellsHtml=`<div class="curric-grid">`;
+    LEVELS.forEach(lv=>{
+      const val=getCurricVal(skill.key,lv);
+      cellsHtml+=`<div contenteditable="true" class="curric-cell ${lv}-border" id="cc-${skill.key}-${lv}" data-key="${skill.key}" data-level="${lv}">${val}</div>`;
     });
-  } else if(tier.includes('Silver')){
-    ocData.silverNotes=document.getElementById('oc-silver-notes')?.value||'';
-  } else {
-    ocData.bronzeNotes=document.getElementById('oc-bronze-notes')?.value||'';
-  }
-  return JSON.parse(JSON.stringify(ocData));
+    cellsHtml+='</div>';
+    body.innerHTML=labelsHtml+cellsHtml;
+    card.append(hdr,body);el.appendChild(card);
+  });
+}
+
+function toggleCurricSkill(key){
+  const body=document.getElementById(`curric-body-${key}`);
+  const chev=document.getElementById(`chev-${key}`);
+  const open=body.classList.toggle('open');
+  if(chev)chev.classList.toggle('open',open);
+}
+
+function renderCurricFocus(){
+  const el=document.getElementById('curric-focus-content');el.innerHTML='';
+  const lv=curricLevel;const c=LEVEL_COLORS[lv];
+  CURRIC_SKILLS.forEach(skill=>{
+    const card=document.createElement('div');card.className='curric-skill-card';card.style.borderTop=`3px solid ${c.border}`;
+    const val=getCurricVal(skill.key,lv);
+    card.innerHTML=`<div style="padding:12px 14px 6px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">${skill.icon}</span><strong style="font-size:13px;color:${c.col};">${skill.label}</strong></div>
+      <div style="padding:0 14px 14px;"><div contenteditable="true" class="curric-cell ${lv}-border" id="ccf-${skill.key}-${lv}" data-key="${skill.key}" data-level="${lv}">${val}</div></div>`;
+    el.appendChild(card);
+  });
+}
+
+function showCurricLevel(lv){
+  curricLevel=lv;
+  LEVELS.forEach(l=>{
+    const btn=document.getElementById(`cltab-${l}`);const c=LEVEL_COLORS[l];
+    if(l===lv){btn.style.background=c.bg;btn.style.color=c.col;btn.style.borderBottom=`3px solid ${c.border}`;}
+    else{btn.style.background='#f0f0f0';btn.style.color='#999';btn.style.borderBottom='3px solid transparent';}
+  });
+  renderCurricFocus();
+}
+
+function collectCurricFromDOM(){
+  document.querySelectorAll('[id^="cc-"]').forEach(el=>{
+    const key=el.dataset.key,lv=el.dataset.level;
+    if(!curricData[key])curricData[key]={};curricData[key][lv]=el.innerText;
+  });
+  document.querySelectorAll('[id^="ccf-"]').forEach(el=>{
+    const key=el.dataset.key,lv=el.dataset.level;
+    if(!curricData[key])curricData[key]={};curricData[key][lv]=el.innerText;
+  });
+}
+
+async function saveCurriculum(){
+  collectCurricFromDOM();
+  await dbSet('curriculum',curricData);
+  flash('curric-flash');flash('curric-flash2');
+}
+
+async function loadCurriculum(){
+  const saved=await dbGet('curriculum');
+  if(saved)curricData=saved;
+  buildCurricAccordion();
 }
 
 // ── CHECKLISTS ──
@@ -632,11 +692,11 @@ const metrics=[
   {s:'j-rl-s',e:'j-rl-e',chg:'j-rl-chg',higher:true},{s:'j-rr-s',e:'j-rr-e',chg:'j-rr-chg',higher:true}
 ];
 
-function calcChange(sId,eId,chgId,higherIsBetter){
+function calcChange(sId,eId,chgId,higher){
   const s=parseFloat(document.getElementById(sId)?.value),e=parseFloat(document.getElementById(eId)?.value);
   const el=document.getElementById(chgId);if(!el)return;
   if(isNaN(s)||isNaN(e)){el.textContent='—';el.style.color='#999';return;}
-  const diff=e-s,improved=higherIsBetter?diff>0:diff<0;
+  const diff=e-s,improved=higher?diff>0:diff<0;
   el.textContent=(diff>0?'+':'')+diff.toFixed(1);el.style.color=improved?'#1a3f6b':diff===0?'#999':'#e55';
 }
 
@@ -646,11 +706,69 @@ function bindMetrics(){
     document.getElementById(m.e)?.addEventListener('input',()=>calcChange(m.s,m.e,m.chg,m.higher));
   });
   const sgH=[1,2,3,4,5,6,7,8,9];
-  function calcSgTotals(){let ts=0,te=0;sgH.forEach(h=>{const s=parseFloat(document.getElementById(`j-sg${h}-s`)?.value),e=parseFloat(document.getElementById(`j-sg${h}-e`)?.value);if(!isNaN(s))ts+=s;if(!isNaN(e))te+=e;});document.getElementById('j-sg-total-s').textContent=ts||'—';document.getElementById('j-sg-total-e').textContent=te||'—';const chgEl=document.getElementById('j-sg-chg');if(ts&&te){const diff=te-ts;chgEl.textContent=(diff>0?'+':'')+diff;chgEl.style.color=diff>0?'#1a3f6b':diff===0?'#999':'#e55';}else{chgEl.textContent='—';chgEl.style.color='#999';}}
+  function calcSgTotals(){let ts=0,te=0;sgH.forEach(h=>{const s=parseFloat(document.getElementById(`j-sg${h}-s`)?.value),e=parseFloat(document.getElementById(`j-sg${h}-e`)?.value);if(!isNaN(s))ts+=s;if(!isNaN(e))te+=e;});document.getElementById('j-sg-total-s').textContent=ts||'—';document.getElementById('j-sg-total-e').textContent=te||'—';const c=document.getElementById('j-sg-chg');if(ts&&te){const d=te-ts;c.textContent=(d>0?'+':'')+d;c.style.color=d>0?'#1a3f6b':d===0?'#999':'#e55';}else{c.textContent='—';c.style.color='#999';}}
   sgH.forEach(h=>{document.getElementById(`j-sg${h}-s`)?.addEventListener('input',calcSgTotals);document.getElementById(`j-sg${h}-e`)?.addEventListener('input',calcSgTotals);});
   const ptH=[1,2,3,4,5,6,7,8,9];
-  function calcPtTotals(){let ts=0,te=0;ptH.forEach(h=>{const s=parseFloat(document.getElementById(`j-pt${h}-s`)?.value),e=parseFloat(document.getElementById(`j-pt${h}-e`)?.value);if(!isNaN(s))ts+=s;if(!isNaN(e))te+=e;});document.getElementById('j-pt-total-s').textContent=ts||'—';document.getElementById('j-pt-total-e').textContent=te||'—';const chgEl=document.getElementById('j-pt-chg');if(ts&&te){const diff=te-ts;chgEl.textContent=(diff>0?'+':'')+diff;chgEl.style.color=diff>0?'#1a3f6b':diff===0?'#999':'#e55';}else{chgEl.textContent='—';chgEl.style.color='#999';}}
+  function calcPtTotals(){let ts=0,te=0;ptH.forEach(h=>{const s=parseFloat(document.getElementById(`j-pt${h}-s`)?.value),e=parseFloat(document.getElementById(`j-pt${h}-e`)?.value);if(!isNaN(s))ts+=s;if(!isNaN(e))te+=e;});document.getElementById('j-pt-total-s').textContent=ts||'—';document.getElementById('j-pt-total-e').textContent=te||'—';const c=document.getElementById('j-pt-chg');if(ts&&te){const d=te-ts;c.textContent=(d>0?'+':'')+d;c.style.color=d>0?'#1a3f6b':d===0?'#999':'#e55';}else{c.textContent='—';c.style.color='#999';}}
   ptH.forEach(h=>{document.getElementById(`j-pt${h}-s`)?.addEventListener('input',calcPtTotals);document.getElementById(`j-pt${h}-e`)?.addEventListener('input',calcPtTotals);});
+}
+
+// ── ON-COURSE ──
+function updateOCSection(){
+  const tier=document.getElementById('j-tier').value;
+  const el=document.getElementById('oc-section');
+  if(tier.includes('Gold'))renderGoldOC(el);
+  else if(tier.includes('Silver'))renderSilverOC(el);
+  else renderBronzeOC(el);
+}
+
+function renderGoldOC(el){
+  let html=`<div style="border-top:2px solid #90b8e0;margin-top:14px;padding-top:14px;"><div class="sec-label goldc">⛳ On-Course Assessment — Gold Squad</div><p style="font-size:10px;color:var(--mid);margin-bottom:12px;">Progressive distance challenge. Each hole is a par 4. Pass = 5 holes in ≤20 shots.</p>`;
+  SM_STAGES.forEach((s,i)=>{
+    const d=ocData.stages[i];const passed=d.passed;
+    html+=`<div class="stage-card${passed?' passed':''}" id="stage-card-${i}"><div class="stage-header"><div class="stage-title">🏌️ ${s.label} — ${s.dist}</div><span class="stage-badge">${passed?'✅ Passed':'⏳ In Progress'}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;"><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">5-Hole Score (par ${s.par})</label><input type="number" id="oc-s${i}-score" value="${d.score||''}" placeholder="e.g. 18" min="5" max="60" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;" oninput="checkStagePass(${i})"></div><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Date Played</label><input type="date" id="oc-s${i}-date" value="${d.date||''}" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;"></div></div><div class="fr" style="margin-bottom:6px;"><label style="font-size:10px;">Coach Notes</label><textarea id="oc-s${i}-notes" rows="2" placeholder="Observations for this stage..." class="oc-notes-area" style="min-height:56px;">${d.notes||''}</textarea></div><div class="pass-flag${passed?' passed':''}" id="oc-s${i}-flag">${passed?`✅ Passed — Score: ${d.score}${d.date?' on '+d.date:''}`:`🎯 Need ≤${s.par} shots to pass`}</div></div>`;
+  });
+  html+=`<div style="margin-top:14px;"><div class="sec-label goldc">🏅 9-Hole Score Log</div><p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log every round and track best score over time.</p><div class="nine-hole-entry"><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Score</label><input type="number" id="nh-score-input" placeholder="e.g. 38" min="9" max="120" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;"></div><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Date</label><input type="date" id="nh-date-input" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;"></div><button class="btn-sm btn-sm-g" onclick="addNineHole()">+ Log Round</button></div><div id="nine-hole-log-list" class="nine-hole-log"></div></div></div>`;
+  el.innerHTML=html;renderNineHoleLog();
+}
+
+function checkStagePass(i){
+  const score=parseInt(document.getElementById(`oc-s${i}-score`)?.value);
+  const par=SM_STAGES[i].par;const date=document.getElementById(`oc-s${i}-date`)?.value;
+  const flag=document.getElementById(`oc-s${i}-flag`);const card=document.getElementById(`stage-card-${i}`);const badge=card?.querySelector('.stage-badge');
+  if(!isNaN(score)&&score<=par){ocData.stages[i].passed=true;if(flag){flag.className='pass-flag passed';flag.textContent=`✅ Passed — Score: ${score}${date?' on '+date:''}`;}if(card)card.classList.add('passed');if(badge)badge.textContent='✅ Passed';}
+  else{ocData.stages[i].passed=false;if(flag){flag.className='pass-flag';flag.textContent=`🎯 Need ≤${par} shots to pass`;}if(card)card.classList.remove('passed');if(badge)badge.textContent='⏳ In Progress';}
+}
+
+function addNineHole(){
+  const score=parseInt(document.getElementById('nh-score-input')?.value);const date=document.getElementById('nh-date-input')?.value;
+  if(isNaN(score)||score<9){alert('Please enter a valid 9-hole score.');return;}
+  ocData.nineHoleLogs.unshift({score,date:date||'',id:Date.now()});
+  document.getElementById('nh-score-input').value='';document.getElementById('nh-date-input').value='';
+  renderNineHoleLog();
+}
+
+function removeNineHole(id){ocData.nineHoleLogs=ocData.nineHoleLogs.filter(r=>r.id!==id);renderNineHoleLog();}
+
+function renderNineHoleLog(){
+  const el=document.getElementById('nine-hole-log-list');if(!el)return;
+  if(!ocData.nineHoleLogs.length){el.innerHTML='<p style="font-size:11px;color:var(--light);padding:6px 0;">No rounds logged yet.</p>';return;}
+  const best=Math.min(...ocData.nineHoleLogs.map(r=>r.score));
+  let html=`<div class="nine-hole-best">🏆 Best score: ${best}</div>`;
+  ocData.nineHoleLogs.forEach(r=>{html+=`<div class="nine-hole-row"><span>${r.date||'No date'}</span><span class="nh-score">${r.score} shots</span><span onclick="removeNineHole(${r.id})" style="cursor:pointer;color:#ccc;font-size:14px;padding:0 4px;">✕</span></div>`;});
+  el.innerHTML=html;
+}
+
+function renderSilverOC(el){el.innerHTML=`<div style="border-top:2px solid #b0c4d8;margin-top:14px;padding-top:14px;"><div class="sec-label silverc">⛳ On-Course Notes — Silver</div><p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log notes for any on-course sessions.</p><textarea id="oc-silver-notes" class="oc-notes-area" rows="4" placeholder="e.g. Week 3 on-course — focus on course management...">${ocData.silverNotes||''}</textarea></div>`;}
+
+function renderBronzeOC(el){el.innerHTML=`<div style="border-top:2px solid #d4b896;margin-top:14px;padding-top:14px;"><div class="sec-label bronzec">⛳ On-Course Notes — Bronze</div><p style="font-size:10px;color:var(--mid);margin-bottom:8px;">Log notes for any on-course sessions.</p><textarea id="oc-bronze-notes" class="oc-notes-area" rows="4" placeholder="e.g. Introductory on-course visit...">${ocData.bronzeNotes||''}</textarea></div>`;}
+
+function collectOCData(){
+  const tier=document.getElementById('j-tier').value;
+  if(tier.includes('Gold')){SM_STAGES.forEach((_,i)=>{ocData.stages[i].score=document.getElementById(`oc-s${i}-score`)?.value||'';ocData.stages[i].date=document.getElementById(`oc-s${i}-date`)?.value||'';ocData.stages[i].notes=document.getElementById(`oc-s${i}-notes`)?.value||'';});}
+  else if(tier.includes('Silver')){ocData.silverNotes=document.getElementById('oc-silver-notes')?.value||'';}
+  else{ocData.bronzeNotes=document.getElementById('oc-bronze-notes')?.value||'';}
+  return JSON.parse(JSON.stringify(ocData));
 }
 
 // ── MENTAL ──
@@ -674,8 +792,7 @@ async function saveProfile(){
   const oc=collectOCData();
   const profiles=await dbGet('profiles')||[];
   profiles.push({id:Date.now(),name,dob:document.getElementById('j-dob').value,hcp:document.getElementById('j-hcp').value,tier:document.getElementById('j-tier').value,parent:document.getElementById('j-parent').value,mobile:document.getElementById('j-mobile').value,emerg:document.getElementById('j-emerg').value,medical:document.getElementById('j-medical').value,goal:document.getElementById('j-goal').value,oc});
-  await dbSet('profiles',profiles);
-  flash('profile-flash');await renderProfiles();clearProfileForm();
+  await dbSet('profiles',profiles);flash('profile-flash');await renderProfiles();clearProfileForm();
 }
 
 async function renderProfiles(){
@@ -688,11 +805,7 @@ async function renderProfiles(){
     const cls=p.tier.includes('Gold')?'gold':p.tier.includes('Silver')?'silver':'bronze';
     const icon=p.tier.includes('Gold')?'🥇':p.tier.includes('Silver')?'🥈':'🥉';
     let ocSummary='';
-    if(p.tier.includes('Gold')&&p.oc){
-      const stagesPassed=p.oc.stages.filter(s=>s.passed).length;
-      const bestNH=p.oc.nineHoleLogs?.length?Math.min(...p.oc.nineHoleLogs.map(r=>r.score)):null;
-      ocSummary=`<span style="font-size:10px;color:var(--bgold);margin-left:6px;">⛳ Stages: ${stagesPassed}/4${bestNH?` · 9-hole best: ${bestNH}`:''}</span>`;
-    }
+    if(p.tier.includes('Gold')&&p.oc){const sp=p.oc.stages.filter(s=>s.passed).length;const bn=p.oc.nineHoleLogs?.length?Math.min(...p.oc.nineHoleLogs.map(r=>r.score)):null;ocSummary=`<span style="font-size:10px;color:var(--bgold);margin-left:6px;">⛳ Stages: ${sp}/4${bn?` · 9-hole best: ${bn}`:''}</span>`;}
     const item=document.createElement('div');item.className='profile-item';
     item.innerHTML=`<div class="pav ${cls}">${icon}</div><div class="pinfo"><h4>${p.name}</h4><p>${p.tier} · HCP: ${p.hcp||'—'} · Parent: ${p.parent||'—'}${ocSummary}</p></div><span class="badge ${cls}">${cls.toUpperCase()}</span><span class="pdel" onclick="deleteProfile(${p.id})" title="Delete">✕</span>`;
     list.appendChild(item);
@@ -701,8 +814,7 @@ async function renderProfiles(){
 
 async function deleteProfile(id){
   if(!confirm('Delete this profile?'))return;
-  let profiles=await dbGet('profiles')||[];
-  profiles=profiles.filter(p=>p.id!==id);
+  let profiles=await dbGet('profiles')||[];profiles=profiles.filter(p=>p.id!==id);
   await dbSet('profiles',profiles);await renderProfiles();
 }
 
@@ -720,8 +832,7 @@ async function saveNotes(){
 }
 
 async function renderNotes(){
-  const notes=await dbGet('session_notes')||[];
-  const el=document.getElementById('notes-list');
+  const notes=await dbGet('session_notes')||[];const el=document.getElementById('notes-list');
   if(!notes.length){el.innerHTML='<p style="font-size:12px;color:var(--light);">No notes yet.</p>';return;}
   el.innerHTML=notes.map(n=>`<div class="note-item"><div class="note-meta"><strong>${n.coach||'Coach'} — ${n.tier}</strong><span>${n.date||'No date'} · ${n.num||'?'} juniors</span></div>${n.good?`<p>✅ ${n.good}</p>`:''}${n.next?`<p>➡️ Next: ${n.next}</p>`:''}</div>`).join('');
 }
@@ -747,7 +858,7 @@ function printReport(){
 // ── RESET ──
 async function resetAll(){
   if(!confirm('Reset ALL St Michael\'s data? This cannot be undone.'))return;
-  const keys=['planner_bronze','planner_silver','planner_gold','profiles','session_notes','assessments','reports','term_details','mental_qs','chk_texts_setup','chk_state_setup','chk_texts_do','chk_state_do','chk_texts_avoid','chk_state_avoid','chk_texts_prog','chk_state_prog','chk_texts_feedback','chk_state_feedback'];
+  const keys=['planner_bronze','planner_silver','planner_gold','profiles','session_notes','assessments','reports','term_details','mental_qs','curriculum','chk_texts_setup','chk_state_setup','chk_texts_do','chk_state_do','chk_texts_avoid','chk_state_avoid','chk_texts_prog','chk_state_prog','chk_texts_feedback','chk_state_feedback'];
   for(const key of keys){try{await sb.from('jdp_data').delete().eq('key',k(key));}catch(e){}}
   location.reload();
 }
@@ -760,10 +871,9 @@ async function init(){
     await Promise.all([
       buildChk('chk-setup','setup'),buildChk('chk-do','do'),buildChk('chk-avoid','avoid'),
       buildChk('chk-prog','prog'),buildChk('chk-feedback','feedback'),
-      buildPlanner(),buildMental(),renderProfiles(),renderNotes()
+      buildPlanner(),buildMental(),renderProfiles(),renderNotes(),loadCurriculum()
     ]);
-    bindMetrics();
-    updateOCSection();
+    bindMetrics();updateOCSection();
   }catch(e){
     document.getElementById('sync-dot').className='sync-dot off';
     document.getElementById('sync-msg').textContent='Database error';
