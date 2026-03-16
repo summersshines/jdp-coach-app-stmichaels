@@ -536,7 +536,7 @@ async function dbGet(key){try{const{data,error}=await sb.from('jdp_data').select
 async function dbSet(key,val){try{await sb.from('jdp_data').upsert({key:k(key),value:JSON.stringify(val)},{onConflict:'key'});showSaved('✓ Synced');}catch(e){showSaved('⚠️ Save failed',true);}}
 function showSaved(msg,err){const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-msg');dot.className='sync-dot'+(err?' off':'');txt.textContent=msg;setTimeout(()=>{dot.className='sync-dot';txt.textContent='Live sync on';},2500);}
 function flash(id){const el=document.getElementById(id);if(el){el.style.display='block';setTimeout(()=>el.style.display='none',3000);}}
-function show(id,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active');}
+function show(id,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active');if(id==='overview')renderOverview();}
 
 // ── CHECKLISTS ──
 const DEF={
