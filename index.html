@@ -568,7 +568,7 @@ function loadJuniorProfile(){
   const p=allProfiles.find(x=>String(x.id)===String(id));if(!p)return;
   document.getElementById('form-title').textContent='✏️ Update Junior Profile';
   document.getElementById('j-id').value=p.id;
-  ['name','dob','hcp','parent','mobile','emerg','medical','goal','video','weight'].forEach(f=>{const el=document.getElementById(`j-${f}`);if(el)el.value=p[f]||'';});
+  ['name','dob','hcp','parent','mobile','emerg','medical','goal','video','weight','pemail','jemail'].forEach(f=>{
   document.getElementById('j-gender').value=p.gender||'M';
   document.getElementById('j-tier').value=p.tier||'Bronze Squad';
   document.getElementById('j-mental-more').value=p.mentalMore||'';
