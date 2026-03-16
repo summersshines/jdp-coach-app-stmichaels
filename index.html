@@ -355,6 +355,19 @@
   <div class="profile-list" id="profile-list"><p style="font-size:12px;color:var(--light);">No profiles yet.</p></div>
 </div>
 
+<!-- SQUAD OVERVIEW -->
+<div id="overview" class="panel">
+  <div class="stitle">Squad <span>Overview</span></div>
+  <div class="sdesc">Latest benchmark levels for all juniors across all tests. Updates automatically from saved profile data.</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <button class="btn-sm btn-sm-g" id="ovr-all" onclick="filterOverview('all')">All Squads</button>
+    <button class="btn-sm" id="ovr-gold" onclick="filterOverview('gold')" style="background:#fdf3d8;color:#9a7020;border:none;">🥇 Gold Squad</button>
+    <button class="btn-sm" id="ovr-silver" onclick="filterOverview('silver')" style="background:#e0e7ef;color:var(--silver);border:none;">🥈 Silver Squad</button>
+    <button class="btn-sm" id="ovr-bronze" onclick="filterOverview('bronze')" style="background:#f5ece0;color:var(--bronze);border:none;">🥉 Bronze Squad</button>
+  </div>
+  <div id="overview-content"></div>
+</div>
+
 </div>
 
 <script>
