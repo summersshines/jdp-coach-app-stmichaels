@@ -669,7 +669,68 @@ function renderProfiles(){
 async function saveNotes(){const note={id:Date.now(),date:document.getElementById('sn-date').value,tier:document.getElementById('sn-tier').value,coach:document.getElementById('sn-coach').value,num:document.getElementById('sn-num').value,good:document.getElementById('sn-good').value,next:document.getElementById('sn-next').value};const notes=await dbGet('session_notes')||[];notes.unshift(note);if(notes.length>20)notes.length=20;await dbSet('session_notes',notes);flash('notes-flash');await renderNotes();}
 async function renderNotes(){const notes=await dbGet('session_notes')||[],el=document.getElementById('notes-list');if(!notes.length){el.innerHTML='<p style="font-size:12px;color:var(--light);">No notes yet.</p>';return;}el.innerHTML=notes.map(n=>`<div class="note-item"><div class="note-meta"><strong>${n.coach||'Coach'} — ${n.tier}</strong><span>${formatDate(n.date)||'No date'} · ${n.num||'?'} juniors</span></div>${n.good?`<p>✅ ${n.good}</p>`:''}${n.next?`<p>➡️ Next: ${n.next}</p>`:''}</div>`).join('');}
 
-// ── RESET ──
+// ── SQUAD OVERVIEW ──
+let overviewFilter='all';
+function filterOverview(f){
+  overviewFilter=f;
+  ['all','gold','silver','bronze'].forEach(x=>{
+    const btn=document.getElementById(`ovr-${x}`);
+    if(!btn)return;
+    if(x===f){btn.style.background='var(--blue)';btn.style.color='white';}
+    else{
+      const styles={all:'',gold:'background:#fdf3d8;color:#9a7020;',silver:'background:#e0e7ef;color:var(--silver);',bronze:'background:#f5ece0;color:var(--bronze);'};
+      btn.setAttribute('style',styles[x]+'border:none;');
+    }
+  });
+  renderOverview();
+}
+function renderOverview(){
+  const el=document.getElementById('overview-content');if(!el)return;
+  const allTests=[...BENCH_TESTS.golf,...BENCH_TESTS.physical];
+  const squads=overviewFilter==='all'?['Gold Squad','Silver Squad','Bronze Squad']:[overviewFilter.charAt(0).toUpperCase()+overviewFilter.slice(1)+' Squad'];
+  let html='';
+  squads.forEach(squad=>{
+    const juniors=allProfiles.filter(p=>p.tier&&p.tier.includes(squad.split(' ')[0]));
+    if(!juniors.length)return;
+    const cls=squad.includes('Gold')?'gold':squad.includes('Silver')?'silver':'bronze';
+    const icon=squad.includes('Gold')?'🥇':squad.includes('Silver')?'🥈':'🥉';
+    html+=`<div class="card ${cls}" style="margin-bottom:20px;overflow-x:auto;">`;
+    html+=`<h3>${icon} ${squad} <span style="font-weight:400;font-size:11px;color:var(--mid);">(${juniors.length} junior${juniors.length>1?'s':''})</span></h3>`;
+    html+=`<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;">`;
+    html+=`<thead><tr><th style="text-align:left;padding:8px 10px;border-bottom:2px solid #eee;white-space:nowrap;">Junior</th>`;
+    allTests.forEach(t=>{html+=`<th style="text-align:center;padding:8px 6px;border-bottom:2px solid #eee;white-space:nowrap;font-size:10px;">${t.label.replace(' Challenge','').replace(' Skills','')}</th>`;});
+    html+=`</tr></thead><tbody>`;
+    const squadTotals={};allTests.forEach(t=>{squadTotals[t.key]=[];});
+    juniors.forEach(p=>{
+      html+=`<tr style="border-bottom:1px solid #f0f0f0;">`;
+      html+=`<td style="padding:8px 10px;font-weight:700;white-space:nowrap;">${p.name}</td>`;
+      allTests.forEach(t=>{
+        const logs=p.benchLogs?.[t.key]||[];
+        const latest=logs.length?logs[logs.length-1]:null;
+        const first=logs.length>1?logs[0]:null;
+        if(!latest||!latest.level){html+=`<td style="text-align:center;padding:6px;color:#ccc;">—</td>`;return;}
+        const band=getBand(latest.level);
+        let delta='';
+        if(first&&first.level){const diff=latest.level-first.level;if(diff>0)delta=`<div style="font-size:9px;color:#1a6b3c;">▲${diff}</div>`;else if(diff<0)delta=`<div style="font-size:9px;color:#c0392b;">▼${Math.abs(diff)}</div>`;}
+        squadTotals[t.key].push(latest.level);
+        html+=`<td style="text-align:center;padding:6px;"><span class="bench-badge ${band?.cls||''}" style="font-size:10px;padding:2px 6px;">L${latest.level}</span>${delta}</td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`<tr style="background:#f8f8f8;font-weight:800;">`;
+    html+=`<td style="padding:8px 10px;font-size:11px;color:var(--mid);">Group Avg</td>`;
+    allTests.forEach(t=>{
+      const vals=squadTotals[t.key];
+      if(!vals.length){html+=`<td style="text-align:center;color:#ccc;">—</td>`;return;}
+      const avg=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);
+      html+=`<td style="text-align:center;font-size:11px;color:var(--blue);">${avg}</td>`;
+    });
+    html+=`</tr></tbody></table></div></div>`;
+  });
+  if(!html)html='<p style="font-size:12px;color:var(--light);">No juniors found. Add profiles first.</p>';
+  el.innerHTML=html;
+}
+  // ── RESET ──
 async function resetAll(){if(!confirm('Reset ALL St Michael\'s data? This cannot be undone.'))return;const keys=['planner_bronze','planner_silver','planner_gold','profiles','session_notes','term_details','mental_qs','curriculum','chk_texts_setup','chk_state_setup','chk_texts_do','chk_state_do','chk_texts_avoid','chk_state_avoid'];for(const key of keys){try{await sb.from('jdp_data').delete().eq('key',k(key));}catch(e){}}location.reload();}
 
 // ── INIT ──
