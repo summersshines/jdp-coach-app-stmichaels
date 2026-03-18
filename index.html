@@ -1,1 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>St Michael's Golf Club JDP – Coach App</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--blue:#1a3f6b;--lblue:#2d6ea8;--gold:#c9a84c;--bronze:#8b5e2a;--silver:#4a6b8b;--bg:#f4f6f8;--card:#fff;--dark:#1a1a1a;--mid:#555;--light:#999;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--dark);font-size:13px;}
+  .hdr{background:linear-gradient(135deg,#0d1e3a,#1a3f6b);color:white;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+  .hdr .logo{font-size:24px;flex-shrink:0;}
+  .hdr-text{flex:1;min-width:0;}
+  .hdr-text h1{font-size:15px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hdr-text p{font-size:10px;opacity:.7;display:none;}
+  .hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .save-ind{font-size:10px;opacity:.8;transition:all .3s;white-space:nowrap;}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:#4caf50;display:inline-block;margin-right:3px;}
+  .sync-dot.off{background:#ff5252;}
+  .btn-reset{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.6);padding:6px 10px;border-radius:6px;font-size:10px;cursor:pointer;}
+  #loading{position:fixed;inset:0;background:rgba(13,26,58,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:white;gap:14px;}
+  .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  #loading p{font-size:14px;opacity:.8;}
+  .tabs{display:flex;background:#0d1e3a;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:56px;z-index:99;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{padding:13px 16px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+  .tab.active{color:white;border-bottom-color:var(--gold);}
+  .content{padding:16px;max-width:980px;margin:0 auto;}
+  .panel{display:none;}.panel.active{display:block;}
+  .stitle{font-size:18px;font-weight:900;margin-bottom:3px;}.stitle span{color:var(--blue);}
+  .sdesc{font-size:12px;color:var(--mid);margin-bottom:14px;line-height:1.5;}
+  .edit-hint{font-size:10px;color:var(--light);font-style:italic;margin-bottom:10px;}
+  .edit-hint span{background:#eee;border-radius:4px;padding:1px 6px;font-style:normal;}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .gap{display:flex;flex-direction:column;gap:12px;}
+  .card{background:var(--card);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.07);}
+  .card h3{font-size:13px;font-weight:800;margin-bottom:10px;}
+  .card.gold{border-top:4px solid var(--gold);}.card.gold h3{color:#9a7020;}
+  .card.silver{border-top:4px solid var(--silver);}.card.silver h3{color:var(--silver);}
+  .card.bronze{border-top:4px solid var(--bronze);}.card.bronze h3{color:var(--bronze);}
+  .card.blue{border-top:4px solid var(--blue);}.card.blue h3{color:var(--blue);}
+  .chk{display:flex;flex-direction:column;gap:8px;}
+  .chk label{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--mid);cursor:pointer;line-height:1.5;padding:4px 0;}
+  .chk input[type=checkbox]{margin-top:2px;accent-color:var(--blue);flex-shrink:0;width:18px;height:18px;}
+  .chk input:checked+span{text-decoration:line-through;opacity:.45;}
+  .fr{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+  .fr label{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;}
+  .fr input,.fr select,.fr textarea{border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:16px;font-family:inherit;background:#fafafa;transition:border .2s;resize:vertical;-webkit-appearance:none;appearance:none;}
+  .fr input:focus,.fr select:focus,.fr textarea:focus{outline:none;border-color:var(--blue);background:white;}
+  .fr select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+  .star{font-size:22px;cursor:pointer;color:#ddd;transition:color .15s;user-select:none;-webkit-tap-highlight-color:transparent;}
+  .star.on{color:var(--gold);}
+  .planner-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;}
+  table.planner{width:100%;border-collapse:collapse;font-size:12px;min-width:500px;}
+  table.planner th{padding:9px 10px;text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+  table.planner td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top;}
+  table.planner tr:last-child td{border-bottom:none;}
+  .wk-num{font-weight:800;color:var(--blue);text-align:center;width:36px;}
+  [contenteditable]{outline:none;border-radius:4px;padding:3px 5px;transition:background .15s;min-width:20px;display:inline-block;}
+  [contenteditable]:hover{background:rgba(26,63,107,.07);}
+  [contenteditable]:focus{background:rgba(26,63,107,.12);box-shadow:0 0 0 2px rgba(26,63,107,.25);}
+  .profile-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .profile-item{background:white;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .2s;}
+  .profile-item:hover{box-shadow:0 3px 12px rgba(0,0,0,.12);}
+  .pav{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .pav.gold{background:#fdf3d8;}.pav.silver{background:#e0e7ef;}.pav.bronze{background:#f5e6d3;}
+  .pinfo{flex:1;min-width:0;}.pinfo h4{font-size:13px;font-weight:700;}.pinfo p{font-size:11px;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pdel{font-size:18px;cursor:pointer;color:#ccc;transition:color .2s;padding:4px;}.pdel:hover{color:#e55;}
+  .badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;}
+  .badge.gold{background:#fdf3d8;color:#9a7020;}.badge.silver{background:#e0e7ef;color:var(--silver);}.badge.bronze{background:#f5e6d3;color:var(--bronze);}
+  .btn{display:inline-block;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+  .btn-g{background:var(--blue);color:white;}.btn-g:hover{background:#122d4f;}
+  .btn-o{background:transparent;border:2px solid var(--blue);color:var(--blue);}.btn-o:hover{background:var(--blue);color:white;}
+  .btn-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .btn-row .btn{flex:1;text-align:center;min-width:120px;}
+  .div{height:1px;background:#eee;margin:16px 0;}
+  .flash{font-size:12px;color:var(--blue);margin-top:8px;display:none;padding:8px 12px;background:#e8f0fb;border-radius:6px;}
+  .note-item{padding:12px;border-bottom:1px solid #f0f0f0;}
+  .note-item:last-child{border-bottom:none;}
+  .note-meta{display:flex;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:4px;}
+  .note-meta strong{font-size:13px;}
+  .note-meta span{font-size:10px;color:var(--light);}
+  .note-item p{font-size:12px;color:var(--mid);line-height:1.5;}
+  .btn-sm{padding:7px 14px;font-size:12px;font-weight:700;border-radius:7px;border:none;cursor:pointer;}
+  .btn-sm-g{background:var(--blue);color:white;}.btn-sm-g:hover{background:#122d4f;}
+  .junior-selector{background:white;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .junior-selector label{font-size:11px;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+  .junior-selector select{flex:1;min-width:180px;border:2px solid var(--blue);border-radius:8px;padding:10px 32px 10px 12px;font-size:14px;font-family:inherit;background:#fafafa url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M6 8L0 0h12z'/%3E%3C/svg%3E") no-repeat right 12px center;-webkit-appearance:none;appearance:none;}
+  .bench-section{margin-bottom:20px;}
+  .bench-section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--mid);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #eee;}
+  .bench-test-card{background:#fafafa;border:1px solid #eee;border-radius:10px;margin-bottom:10px;overflow:hidden;}
+  .bench-test-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:white;border-bottom:1px solid #eee;flex-wrap:wrap;gap:8px;}
+  .bench-test-name{font-size:12px;font-weight:800;color:var(--dark);}
+  .bench-test-name small{font-size:10px;font-weight:400;color:var(--light);display:block;}
+  .bench-current{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .bench-badge{display:inline-block;font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+  .band-1,.band-2{background:#fde8e8;color:#c0392b;}
+  .band-3,.band-4{background:#fef3cd;color:#856404;}
+  .band-5,.band-6{background:#e8f4e8;color:#1a6b3c;}
+  .band-7,.band-8{background:#d0e8ff;color:#1a4a7a;}
+  .band-9,.band-10{background:#e8d5f5;color:#6b2fa0;}
+  .bench-delta{font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;}
+  .bench-delta.up{background:#e8f0fb;color:#1a3f6b;}
+  .bench-delta.down{background:#fde8e8;color:#c0392b;}
+  .bench-delta.flat{background:#f0f0f0;color:#999;}
+  .bench-entry-area{padding:12px 14px;}
+  .bench-entry-row{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .bench-entry-row .fr{margin-bottom:0;flex:1;min-width:80px;}
+  .bench-entry-row .fr input{font-size:15px;padding:8px 10px;}
+  .bench-log{margin-top:8px;}
+  .bench-log-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:white;border-radius:6px;margin-bottom:4px;border:1px solid #eee;font-size:11px;gap:8px;flex-wrap:wrap;}
+  .bench-log-row .log-date{color:var(--light);white-space:nowrap;}
+  .bench-log-row .log-score{font-weight:700;color:var(--dark);}
+  .bench-log-del{cursor:pointer;color:#ddd;font-size:13px;padding:2px 4px;flex-shrink:0;}.bench-log-del:hover{color:#e55;}
+  .bench-info-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--light);padding:2px 4px;}
+  .bench-info-btn:hover{color:var(--blue);}
+  .bench-desc{display:none;font-size:11px;color:var(--mid);line-height:1.6;padding:8px 12px;background:#f0f4fa;border-radius:6px;margin-bottom:8px;border-left:3px solid var(--blue);}
+  .bench-desc.open{display:block;}
+  .mball-tip{font-size:11px;color:var(--bronze);font-weight:700;padding:4px 10px;background:#fef3e2;border-radius:6px;display:inline-block;margin-bottom:10px;}
+  .bench-no-entries{font-size:11px;color:var(--light);padding:4px 0;}
+  .mental-card{background:#fafafa;border-radius:10px;padding:14px;margin-bottom:10px;}
+  .mental-q{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:8px;line-height:1.5;}
+  .stage-card{background:#fffdf7;border:1px solid #e8d9b0;border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .stage-card.passed{background:#f0f6ff;border-color:#a0b8d8;}
+  .stage-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+  .stage-title{font-size:13px;font-weight:800;color:var(--bronze);}
+  .stage-card.passed .stage-title{color:var(--blue);}
+  .stage-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:#f5e6d3;color:var(--bronze);}
+  .stage-card.passed .stage-badge{background:#d0e4f7;color:var(--blue);}
+  .pass-flag{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;background:#fff3cd;color:#856404;border:1px solid #ffc107;margin-top:8px;}
+  .pass-flag.passed{background:#d0e4f7;color:var(--blue);border-color:#90b8e0;}
+  .nine-hole-best{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;padding:5px 10px;background:#e8f0fb;border-radius:6px;}
+  .nine-hole-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f9f9f9;border-radius:6px;margin-bottom:4px;font-size:11px;}
+  .nine-hole-row .nh-score{font-weight:800;font-size:13px;}
+  .sec-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .oc-notes-area{width:100%;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;font-family:inherit;resize:vertical;background:#fafafa;min-height:80px;}
+  .oc-notes-area:focus{outline:none;border-color:var(--blue);background:white;}
+  .curric-skill-card{background:white;border-radius:10px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06);}
+  .curric-skill-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;}
+  .curric-skill-header h4{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;}
+  .curric-skill-body{padding:0 14px 14px;display:none;}
+  .curric-skill-body.open{display:block;}
+  .curric-chevron{font-size:12px;color:var(--light);transition:transform .2s;}
+  .curric-chevron.open{transform:rotate(180deg);}
+  .curric-cell{font-size:12px;color:var(--mid);line-height:1.6;padding:10px 12px;background:#fafafa;border-radius:8px;border-left:3px solid #ddd;white-space:pre-wrap;min-height:48px;}
+  .curric-cell:focus{outline:none;background:#fff;border-left-color:var(--blue);box-shadow:0 0 0 2px rgba(26,63,107,.15);}
+  .curric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;}
+  .curric-col-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding:4px 8px;border-radius:6px;text-align:center;}
+  .curric-save-bar{position:sticky;bottom:0;background:white;border-top:1px solid #eee;padding:10px 0;margin-top:8px;z-index:10;}
+  .curric-level-tabs{display:flex;gap:0;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px;}
+  .curric-level-tab{flex:1;padding:10px 6px;font-size:11px;font-weight:800;border:none;cursor:pointer;transition:all .2s;text-align:center;line-height:1.3;}
+  /* ── RADAR CHARTS ── */
+  .radar-wrap{display:none;margin-bottom:16px;}
+  .radar-wrap.visible{display:block;}
+  .radar-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .radar-card{background:white;border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.07);display:flex;flex-direction:column;align-items:center;}
+  .radar-card-title{font-size:12px;font-weight:800;color:var(--mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;text-align:center;}
+  .radar-card svg{width:100%;max-width:240px;height:auto;}
+  .radar-legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px;}
+  .radar-legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--mid);}
+  .radar-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  @media(max-width:540px){.radar-row{grid-template-columns:1fr;}}
+  /* ── SMART TEMPLATE REPORT ── */
+  .template-report-wrap{margin-top:16px;display:none;}
+  .template-report-wrap.visible{display:block;}
+  .template-report-card{background:white;border-radius:12px;border-top:4px solid var(--gold);box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden;}
+  .template-report-hdr{background:linear-gradient(135deg,#0d1e3a,#1a3f6b);color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .template-report-hdr h3{font-size:14px;font-weight:800;}
+  .template-report-hdr span{font-size:11px;opacity:.7;}
+  .template-report-body{padding:16px;font-size:13px;color:var(--dark);line-height:1.7;white-space:pre-wrap;min-height:80px;}
+  .template-report-actions{padding:12px 16px;border-top:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap;}
+  .btn-copy-tmpl{background:var(--gold);color:#5a3e00;font-weight:800;}
+  .btn-copy-tmpl:hover{background:#b8922a;}
+  /* ── REPORT MODAL ── */
+  #report-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  #report-modal.open{display:flex;align-items:flex-start;justify-content:center;padding:20px 12px;}
+  .report-modal-inner{background:white;border-radius:16px;width:100%;max-width:680px;box-shadow:0 8px 40px rgba(0,0,0,.25);overflow:hidden;}
+  .report-modal-hdr{background:linear-gradient(135deg,#0d1e3a,#1a3f6b);color:white;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .report-modal-hdr h2{font-size:15px;font-weight:800;}
+  .report-modal-hdr p{font-size:11px;opacity:.7;margin-top:2px;}
+  .report-close{background:rgba(255,255,255,.15);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .report-email-bar{background:#f0f4fa;padding:10px 20px;font-size:12px;color:var(--mid);border-bottom:1px solid #e0e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .report-email-bar strong{color:var(--blue);}
+  .report-body{padding:20px;}
+  .report-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 20px;gap:14px;}
+  .report-loading .spinner{border-top-color:var(--blue);}
+  .report-loading p{font-size:13px;color:var(--mid);}
+  .report-text{font-size:13px;line-height:1.8;color:var(--dark);white-space:pre-wrap;background:#fafafa;border-radius:10px;padding:16px;border:1px solid #eee;min-height:200px;}
+  .report-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .report-actions .btn{flex:1;text-align:center;min-width:120px;font-size:13px;padding:11px 16px;}
+  .btn-green{background:#1a7a3c;color:white;}.btn-green:hover{background:#145e2d;}
+  .report-error{background:#fde8e8;color:#c0392b;border-radius:8px;padding:14px;font-size:13px;line-height:1.6;}
+  @media(min-width:641px){.hdr-text p{display:block;}.hdr-text h1{font-size:17px;}.content{padding:18px 22px;}}
+  @media(max-width:640px){.g2{grid-template-columns:1fr;}.btn-row .btn{min-width:0;}.curric-grid{grid-template-columns:1fr 1fr;}.bench-entry-row .fr{min-width:70px;}}
+  @media(min-width:900px){.hdr{padding:14px 24px;}}
+</style>
+</head>
+<body>
+<div id="loading"><div class="spinner"></div><p>Connecting to shared database…</p></div>
 
+<!-- REPORT MODAL -->
+<div id="report-modal" onclick="closeReportIfBg(event)">
+  <div class="report-modal-inner">
+    <div class="report-modal-hdr">
+      <div><h2>📄 End of Term Report</h2><p id="report-modal-name">Loading…</p></div>
+      <button class="report-close" onclick="closeReport()">✕</button>
+    </div>
+    <div class="report-email-bar" id="report-email-bar">
+      <span>📧 Parent email:</span><strong id="report-email-display">—</strong>
+    </div>
+    <div class="report-body">
+      <div class="report-loading" id="report-loading"><div class="spinner"></div><p>Generating report with AI… this takes about 10 seconds.</p></div>
+      <div id="report-output" style="display:none;">
+        <div class="report-text" id="report-text"></div>
+        <div class="report-actions">
+          <button class="btn btn-g" onclick="copyReport()">📋 Copy Report</button>
+          <button class="btn btn-o" onclick="regenerateReport()">↺ Regenerate</button>
+          <button class="btn" style="background:#eee;color:#555;" onclick="closeReport()">Close</button>
+        </div>
+        <div class="flash" id="copy-flash" style="margin-top:8px;">✓ Copied to clipboard!</div>
+      </div>
+      <div id="report-error" style="display:none;" class="report-error"></div>
+    </div>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="logo">⛳</div>
+  <div class="hdr-text">
+    <h1>St Michael's Golf Club Junior Development Program</h1>
+    <p>Live Shared Coach App — all coaches see the same data in real time</p>
+  </div>
+  <div class="hdr-right">
+    <div class="save-ind" id="save-ind"><span class="sync-dot" id="sync-dot"></span><span id="sync-msg">Connecting…</span></div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="show('briefing',this)">📋 Coach Briefing</div>
+  <div class="tab" onclick="show('planner',this)">🗓️ Term Planner</div>
+  <div class="tab" onclick="show('curriculum',this)">📚 Curriculum</div>
+  <div class="tab" onclick="show('profiling',this)">👦 Junior Profiles</div>
+  <div class="tab" onclick="show('overview',this)">📊 Squad Overview</div>
+</div>
+<div class="content">
+
+<!-- BRIEFING -->
+<div id="briefing" class="panel active">
+  <div class="stitle">Coach <span>Briefing</span></div>
+  <div class="sdesc">Tick off items as completed. All changes sync to all coaches instantly.</div>
+  <p class="edit-hint">✏️ Click any text to edit · <span>syncs live to all coaches</span></p>
+  <div class="g2">
+    <div class="gap">
+      <div class="card gold"><h3>✅ Pre-Program Setup</h3><div class="chk" id="chk-setup"></div></div>
+      <div class="card silver"><h3>🟢 Every Session — Must Do</h3><div class="chk" id="chk-do"></div></div>
+    </div>
+    <div class="gap">
+      <div class="card bronze"><h3>🔴 Things to Avoid</h3><div class="chk" id="chk-avoid"></div></div>
+      <div class="card">
+        <h3>📝 Session Notes</h3>
+        <div class="fr"><label>Date</label><input type="date" id="sn-date"></div>
+        <div class="fr"><label>Squad</label><select id="sn-tier"><option>Bronze Squad</option><option>Silver Squad</option><option>Gold Squad</option></select></div>
+        <div class="fr"><label>Coach Name</label><input type="text" id="sn-coach" placeholder="Your name"></div>
+        <div class="fr"><label>Juniors Attended</label><input type="number" id="sn-num" min="1"></div>
+        <div class="fr"><label>Session Highlights</label><textarea id="sn-good" rows="2" placeholder="What went well?"></textarea></div>
+        <div class="fr"><label>Focus for Next Session</label><textarea id="sn-next" rows="2" placeholder="What needs work?"></textarea></div>
+        <div class="btn-row"><button class="btn btn-g" onclick="saveNotes()">💾 Save & Share Notes</button></div>
+        <div class="flash" id="notes-flash">✓ Notes saved!</div>
+      </div>
+    </div>
+  </div>
+  <div class="div"></div>
+  <div class="g2" style="margin-bottom:14px;">
+    <div class="card gold">
+      <h3>🏛️ The Four Pillars</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:22px;flex-shrink:0;">😄</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Fun & Enjoyment First</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">A love of the game is the foundation of lifelong participation. Every session must be engaging and positive.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:22px;flex-shrink:0;">📈</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Long-Term Athlete Development</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">We develop whole athletes — physical literacy, movement skills, and sport-specific ability evolve together.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:22px;flex-shrink:0;">🎯</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Technical Skill Mastery</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">Deliberate practice with clear goals builds confidence and competence across all areas of the game.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:22px;flex-shrink:0;">🧠</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Mental Game & Resilience</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">We teach juniors to manage pressure, embrace challenges, and develop a strong competitive mindset.</p></div></div>
+      </div>
+    </div>
+    <div class="card silver">
+      <h3>🧭 The Four Guiding Principles</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:20px;font-weight:900;color:var(--gold);flex-shrink:0;width:24px;">1</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Player-Centred Approach</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">Ask questions rather than give answers. Encourage juniors to problem-solve and develop ownership of their learning.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:20px;font-weight:900;color:var(--gold);flex-shrink:0;width:24px;">2</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Positive Learning Environment</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">Celebrate effort and improvement over results. Mistakes are learning moments.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:20px;font-weight:900;color:var(--gold);flex-shrink:0;width:24px;">3</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Consistent Language & Expectations</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">All coaches use the same terminology, cues, and expectations across all squads.</p></div></div>
+        <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font-size:20px;font-weight:900;color:var(--gold);flex-shrink:0;width:24px;">4</span><div><strong style="font-size:12px;display:block;margin-bottom:2px;">Whole-Body Athlete Development</strong><p style="font-size:11px;color:var(--mid);line-height:1.45;">Physical conditioning, mobility, and movement quality are embedded in every session.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><h3>📋 Recent Session Notes (All Coaches)</h3><div id="notes-list"><p style="font-size:12px;color:var(--light);">No notes yet.</p></div></div>
+</div>
+
+<!-- TERM PLANNER -->
+<div id="planner" class="panel">
+  <div class="stitle">10-Week <span>Term Planner</span></div>
+  <div class="sdesc">Each squad has its own planner. Click any cell to edit.</div>
+  <div style="display:flex;gap:0;margin-bottom:16px;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+    <button id="ptab-bronze" onclick="showPlannerSquad('bronze')" style="flex:1;padding:10px;font-size:12px;font-weight:800;border:none;cursor:pointer;background:#f5ece0;color:var(--bronze);border-bottom:3px solid var(--bronze);">🥉 Bronze Squad</button>
+    <button id="ptab-silver" onclick="showPlannerSquad('silver')" style="flex:1;padding:10px;font-size:12px;font-weight:800;border:none;cursor:pointer;background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥈 Silver Squad</button>
+    <button id="ptab-gold" onclick="showPlannerSquad('gold')" style="flex:1;padding:10px;font-size:12px;font-weight:800;border:none;cursor:pointer;background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥇 Gold Squad</button>
+  </div>
+  <div id="planner-bronze"><p class="edit-hint">✏️ Click any cell to edit · <span>Bronze Squad</span></p><div class="card" style="padding:12px;"><div class="planner-wrap"><table class="planner"><thead><tr><th style="width:36px;">Wk</th><th style="background:#f5ece0;color:var(--bronze);width:140px;">Session Type</th><th style="background:#f5ece0;color:var(--bronze);">Focus</th><th style="background:#f5ece0;color:var(--bronze);width:120px;">Coach</th><th style="background:#f5ece0;color:var(--bronze);width:160px;">Notes</th></tr></thead><tbody id="planner-body-bronze"></tbody></table></div></div></div>
+  <div id="planner-silver" style="display:none;"><p class="edit-hint">✏️ Click any cell to edit · <span>Silver Squad</span></p><div class="card" style="padding:12px;"><div class="planner-wrap"><table class="planner"><thead><tr><th style="width:36px;">Wk</th><th style="background:#e0e7ef;color:var(--silver);width:140px;">Session Type</th><th style="background:#e0e7ef;color:var(--silver);">Focus</th><th style="background:#e0e7ef;color:var(--silver);width:120px;">Coach</th><th style="background:#e0e7ef;color:var(--silver);width:160px;">Notes</th></tr></thead><tbody id="planner-body-silver"></tbody></table></div></div></div>
+  <div id="planner-gold" style="display:none;"><p class="edit-hint">✏️ Click any cell to edit · <span>Gold Squad</span></p><div class="card" style="padding:12px;"><div class="planner-wrap"><table class="planner"><thead><tr><th style="width:36px;">Wk</th><th style="background:#fdf3d8;color:#9a7020;width:140px;">Session Type</th><th style="background:#fdf3d8;color:#9a7020;">Focus</th><th style="background:#fdf3d8;color:#9a7020;width:120px;">Coach</th><th style="background:#fdf3d8;color:#9a7020;width:160px;">Notes</th></tr></thead><tbody id="planner-body-gold"></tbody></table></div></div></div>
+  <div class="div"></div>
+  <div class="card gold">
+    <h3>📌 Term Details</h3>
+    <div class="g2">
+      <div><div class="fr"><label>Term Name / Year</label><input type="text" id="term-name" placeholder="e.g. Term 2, 2026"></div><div class="fr"><label>Term Start Date</label><input type="date" id="term-start"></div></div>
+      <div><div class="fr"><label>Notes</label><textarea id="term-notes" rows="3" placeholder="Public holidays, events etc."></textarea></div></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-g" onclick="saveTermDetails()">💾 Save Term Details</button></div>
+    <div class="flash" id="term-flash">✓ Saved!</div>
+  </div>
+</div>
+
+<!-- CURRICULUM -->
+<div id="curriculum" class="panel">
+  <div class="stitle">Junior <span>Curriculum</span></div>
+  <div class="sdesc">Skill-by-skill curriculum across all four development levels.</div>
+  <p class="edit-hint">✏️ Click any cell to edit · <span>syncs live</span></p>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+    <span style="font-size:11px;font-weight:700;color:var(--mid);">VIEW:</span>
+    <button onclick="setCurricView('grid')" id="curric-view-grid" class="btn-sm btn-sm-g" style="font-size:11px;">⊞ All Levels</button>
+    <button onclick="setCurricView('focus')" id="curric-view-focus" class="btn-sm" style="font-size:11px;background:#eee;color:#555;border:none;">🔍 One Level</button>
+  </div>
+  <div id="curric-view-grid-panel"><div id="curric-skill-accordion"></div><div class="curric-save-bar"><button class="btn btn-g" style="width:100%;font-size:13px;" onclick="saveCurriculum()">💾 Save Curriculum Changes</button><div class="flash" id="curric-flash" style="margin-top:6px;">✓ Saved!</div></div></div>
+  <div id="curric-view-focus-panel" style="display:none;">
+    <div class="curric-level-tabs">
+      <button class="curric-level-tab" id="cltab-bronze" onclick="showCurricLevel('bronze')" style="background:#f5ece0;color:var(--bronze);border-bottom:3px solid var(--bronze);">🥉 Bronze</button>
+      <button class="curric-level-tab" id="cltab-silver" onclick="showCurricLevel('silver')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥈 Silver</button>
+      <button class="curric-level-tab" id="cltab-gold" onclick="showCurricLevel('gold')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🥇 Gold</button>
+      <button class="curric-level-tab" id="cltab-compete" onclick="showCurricLevel('compete')" style="background:#f0f0f0;color:#999;border-bottom:3px solid transparent;">🏆 Compete</button>
+    </div>
+    <div id="curric-focus-content"></div>
+    <div class="curric-save-bar"><button class="btn btn-g" style="width:100%;font-size:13px;" onclick="saveCurriculum()">💾 Save Curriculum Changes</button><div class="flash" id="curric-flash2" style="margin-top:6px;">✓ Saved!</div></div>
+  </div>
+</div>
+
+<!-- JUNIOR PROFILES -->
+<div id="profiling" class="panel">
+  <div class="stitle">Junior <span>Profiles</span></div>
+  <div class="sdesc">Select a junior to view and update their profile, or add a new junior below.</div>
+  <div class="junior-selector">
+    <label>Select Junior</label>
+    <select id="junior-select" onchange="loadJuniorProfile()"><option value="">— Select a junior —</option></select>
+    <button class="btn-sm btn-sm-g" onclick="newJuniorForm()">+ New Junior</button>
+  </div>
+
+  <!-- RADAR CHARTS -->
+  <div class="radar-wrap" id="radar-wrap">
+    <div class="radar-row">
+      <div class="radar-card">
+        <div class="radar-card-title">⛳ Golf Skills</div>
+        <svg id="radar-golf" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="radar-legend" id="radar-golf-legend"></div>
+      </div>
+      <div class="radar-card">
+        <div class="radar-card-title">💪 Physical Tests</div>
+        <svg id="radar-physical" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="radar-legend" id="radar-physical-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-form-wrap">
+    <div class="card" style="margin-bottom:14px;">
+      <h3 id="form-title">➕ New Junior Profile</h3>
+      <input type="hidden" id="j-id">
+      <div class="g2">
+        <div>
+          <div class="fr"><label>Junior's Name</label><input type="text" id="j-name" placeholder="First & last name"></div>
+          <div class="fr"><label>Date of Birth</label><input type="date" id="j-dob"></div>
+          <div class="fr"><label>Gender</label><select id="j-gender"><option value="M">Male</option><option value="F">Female</option></select></div>
+          <div class="fr"><label>Body Weight (kg) <span style="font-weight:400;text-transform:none;font-size:10px;">— medicine ball selection</span></label><input type="number" id="j-weight" placeholder="e.g. 45" oninput="updateMballTip()"></div>
+          <div class="fr"><label>Current Handicap</label><input type="text" id="j-hcp" placeholder="e.g. 36 or Beginner"></div>
+          <div class="fr"><label>Squad</label><select id="j-tier" onchange="updateOCSection()"><option>Bronze Squad</option><option>Silver Squad</option><option>Gold Squad</option></select></div>
+        </div>
+        <div>
+          <div class="fr"><label>Parent / Guardian</label><input type="text" id="j-parent" placeholder="Full name"></div>
+          <div class="fr"><label>Parent Mobile</label><input type="tel" id="j-mobile" placeholder="04xx xxx xxx"></div>
+          <div class="fr"><label>Emergency Contact</label><input type="text" id="j-emerg" placeholder="Name & number"></div>
+          <div class="fr"><label>Parent Email</label><input type="email" id="j-pemail" placeholder="parent@email.com"></div>
+          <div class="fr"><label>Junior Email <span style="font-weight:400;text-transform:none;font-size:10px;">— if applicable</span></label><input type="email" id="j-jemail" placeholder="junior@email.com"></div>
+          <div class="fr"><label>Medical Conditions</label><textarea id="j-medical" rows="2" placeholder="None if blank"></textarea></div>
+          <div class="fr"><label>Junior's Goal</label><textarea id="j-goal" rows="2" placeholder="What do they want to achieve?"></textarea></div>
+          <div class="fr"><label>🎬 Swing Video (YouTube URL)</label><input type="url" id="j-video" placeholder="https://youtube.com/..."></div>
+        </div>
+      </div>
+      <div id="oc-section" style="margin-top:4px;"></div>
+    </div>
+    <div class="card blue" style="margin-bottom:14px;">
+      <h3>📊 Benchmarking</h3>
+      <p style="font-size:11px;color:var(--mid);margin-bottom:14px;">Enter a score and log it — each entry is timestamped. Tap ℹ️ for test instructions.</p>
+      <div class="bench-section"><div class="bench-section-title">⛳ Golf Skills</div><div id="bench-golf"></div></div>
+      <div class="bench-section"><div class="bench-section-title">💪 Physical Tests</div><div id="mball-tip-display" class="mball-tip" style="display:none;"></div><div id="bench-physical"></div></div>
+    </div>
+    <div class="card blue" style="margin-bottom:14px;">
+      <h3>🧠 Mental Game</h3>
+      <p style="font-size:12px;color:var(--mid);margin-bottom:14px;">Rate each statement from 1–5 stars. Complete the reflection questions below.</p>
+      <div id="mental-qs"></div>
+      <div style="margin-top:14px;">
+        <div class="fr"><label style="font-size:12px;font-weight:700;color:var(--mid);text-transform:none;letter-spacing:0;">What did I do today from a mental skills perspective that I would like to do more of?</label><textarea id="j-mental-more" rows="2" style="font-size:13px;"></textarea></div>
+        <div class="fr"><label style="font-size:12px;font-weight:700;color:var(--mid);text-transform:none;letter-spacing:0;">What from a mental skills perspective would I like to do less of or stop altogether?</label><textarea id="j-mental-less" rows="2" style="font-size:13px;"></textarea></div>
+        <div class="fr"><label style="font-size:12px;font-weight:700;color:var(--mid);text-transform:none;letter-spacing:0;">What did I learn about myself today?</label><textarea id="j-mental-learn" rows="2" style="font-size:13px;"></textarea></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="saveProfile()">💾 Save Profile</button>
+      <button class="btn btn-o" onclick="newJuniorForm()">↺ Clear / New</button>
+      <button class="btn" id="btn-video-open" onclick="openVideo()" style="background:#ff0000;color:white;display:none;">▶ View Swing Video</button>
+      <button class="btn" id="btn-generate-report" onclick="generateReport()" style="background:linear-gradient(135deg,#1a6b3c,#2a9d5c);color:white;display:none;">🤖 AI Report</button>
+      <button class="btn" id="btn-template-report" onclick="generateTemplateReport()" style="background:linear-gradient(135deg,#7a5200,#c9a84c);color:white;display:none;">📋 Smart Template</button>
+    </div>
+    <div class="flash" id="profile-flash">✓ Profile saved!</div>
+    <div class="template-report-wrap" id="template-report-wrap">
+      <div class="template-report-card">
+        <div class="template-report-hdr"><h3>📋 Smart Template Report</h3><span id="template-report-name"></span></div>
+        <div id="template-report-body" class="template-report-body"></div>
+        <div class="template-report-actions">
+          <button class="btn btn-sm btn-copy-tmpl" onclick="copyTemplateReport()">📋 Copy to Clipboard</button>
+          <button class="btn btn-sm" onclick="generateTemplateReport()" style="background:#eee;color:#555;border:none;">↺ Regenerate</button>
+          <button class="btn btn-sm" onclick="hideTemplateReport()" style="background:#eee;color:#555;border:none;">✕ Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="div"></div>
+  <div class="stitle" style="font-size:15px;margin-bottom:8px;">All Juniors <span id="profile-count"></span></div>
+  <div class="profile-list" id="profile-list"><p style="font-size:12px;color:var(--light);">No profiles yet.</p></div>
+</div>
+
+<!-- SQUAD OVERVIEW -->
+<div id="overview" class="panel">
+  <div class="stitle">Squad <span>Overview</span></div>
+  <div class="sdesc">Latest benchmark levels for all juniors across all tests. Updates automatically from saved profile data.</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <button class="btn-sm btn-sm-g" id="ovr-all" onclick="filterOverview('all')">All Squads</button>
+    <button class="btn-sm" id="ovr-gold" onclick="filterOverview('gold')" style="background:#fdf3d8;color:#9a7020;border:none;">🥇 Gold Squad</button>
+    <button class="btn-sm" id="ovr-silver" onclick="filterOverview('silver')" style="background:#e0e7ef;color:var(--silver);border:none;">🥈 Silver Squad</button>
+    <button class="btn-sm" id="ovr-bronze" onclick="filterOverview('bronze')" style="background:#f5ece0;color:var(--bronze);border:none;">🥉 Bronze Squad</button>
+  </div>
+  <div id="overview-content"></div>
+</div>
+
+</div>
+<script>
+const CLUB='stm';
+const SURL='https://dejmkfbzbqtvqgxtwipv.supabase.co';
+const SKEY='sb_publishable_zLIVnPYNxlyyAsYrkq9LJg_ztRZaJFp';
+const sb=supabase.createClient(SURL,SKEY);
+function k(key){return`${CLUB}_${key}`;}
+
+// ── BANDS ──
+const BANDS=[{min:1,max:2,label:'Beginning',cls:'band-1'},{min:3,max:4,label:'Progressing',cls:'band-3'},{min:5,max:6,label:'Developing',cls:'band-5'},{min:7,max:8,label:'Performing',cls:'band-7'},{min:9,max:10,label:'Elite',cls:'band-9'}];
+function getBand(lv){if(!lv||lv<1)return null;return BANDS.find(b=>lv>=b.min&&lv<=b.max)||null;}
+
+const BAND_COLORS=['#c0392b','#c0392b','#856404','#856404','#1a6b3c','#1a6b3c','#1a4a7a','#1a4a7a','#6b2fa0','#6b2fa0'];
+const BAND_FILLS=['rgba(192,57,43,0.18)','rgba(192,57,43,0.18)','rgba(133,100,4,0.18)','rgba(133,100,4,0.18)','rgba(26,107,60,0.18)','rgba(26,107,60,0.18)','rgba(26,74,122,0.18)','rgba(26,74,122,0.18)','rgba(107,47,160,0.18)','rgba(107,47,160,0.18)'];
+
+// ── BENCH TESTS ──
+const BENCH_TESTS={
+  golf:[
+    {key:'long_drive',label:'Long Drive',unit:'Points + Distance (m)',gendered:true,dual:true,f1:'Points',f2:'Metres',thresholds:{M:[{pts:1,dist:30},{pts:1,dist:50},{pts:1,dist:80},{pts:1,dist:110},{pts:2,dist:140},{pts:2,dist:170},{pts:2,dist:200},{pts:3,dist:220},{pts:3,dist:240},{pts:3,dist:260}],F:[{pts:1,dist:25},{pts:1,dist:40},{pts:1,dist:60},{pts:1,dist:90},{pts:2,dist:120},{pts:2,dist:150},{pts:2,dist:180},{pts:3,dist:200},{pts:3,dist:220},{pts:3,dist:240}]},scoreType:'dual_drive',desc:'Set up a fairway 40m wide, hit 5 drives. Record total points AND best total distance.'},
+    {key:'aussie_rules',label:'Aussie Rules',unit:'Points + Distance (m)',gendered:true,dual:true,f1:'Points',f2:'Metres',thresholds:{M:[{pts:1,dist:20},{pts:1,dist:40},{pts:2,dist:60},{pts:2,dist:80},{pts:3,dist:100},{pts:3,dist:120},{pts:4,dist:140},{pts:3,dist:150},{pts:6,dist:160},{pts:7,dist:170}],F:[{pts:1,dist:20},{pts:1,dist:30},{pts:2,dist:50},{pts:2,dist:70},{pts:3,dist:85},{pts:3,dist:105},{pts:4,dist:120},{pts:5,dist:130},{pts:6,dist:140},{pts:7,dist:150}]},scoreType:'dual_drive',desc:'Inner goal 12m wide, outer posts 4m either side. Score 2pts inside middle, 1pt outer. 5 shots with 7 iron.'},
+    {key:'chipping',label:'Chipping',unit:'Points (0–24+)',dual:false,thresholds:[{min:0,max:2},{min:3,max:4},{min:5,max:6},{min:7,max:8},{min:9,max:11},{min:12,max:14},{min:15,max:17},{min:18,max:20},{min:21,max:23},{min:24,max:999}],scoreType:'range',desc:'9 holes short game challenge. Holed=4pts, 0-3ft=3pts, 3-6ft=2pts, 6-12ft=1pt, 12ft+=0pts.'},
+    {key:'putting',label:'Putting',unit:'Total putts (9 holes)',dual:false,inverse:true,scoreType:'putting',desc:'9 holes from 3-30ft. Count total putts. Lower = better.'},
+    {key:'bunker',label:'Bunker',unit:'On green (L1–6) + Proximity ft (L7–10)',dual:true,f1:'On green (0-5)',f2:'Proximity (ft)',scoreType:'bunker',desc:'5 balls to target. L1-6: balls on green out of 5. L7-10: proximity of median ball in feet.'},
+    {key:'oncourse',label:'On Course',unit:'Stage (1–4) or Score to par',dual:true,f1:'Stage (1-4)',f2:'Score to par',scoreType:'oncourse',desc:'L1-4: progressive tees, pass=36 shots. L5-10: members tees, score to par.'},
+    {key:'pitching',label:'Pitching',unit:'Level 1–10 (TBC)',dual:false,scoreType:'placeholder',desc:'Coming soon. Enter 1-10 manually.'},
+  ],
+  physical:[
+    {key:'vertical_jump',label:'Vert Jump',unit:'cm',dual:false,inverse:false,scoreType:'linear',thresholds:[12,15,18,25,30,35,42,48,55,60],desc:'Standing reach vs jump height. 3 jumps, best in cm.'},
+    {key:'situp_throw',label:'Sit-Up & Throw',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[1.5,1.8,2.1,3,3.6,4.2,5.1,5.7,6.6,7.2],mball:true,desc:'Medicine ball throw from floor. 3 throws, longest in metres.'},
+    {key:'chest_pass',label:'Chest Pass',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[1.5,1.8,2.1,3,3.6,4.2,5.1,5.7,6.6,7.2],mball:true,desc:'Seated chest pass. 3 throws, longest in metres.'},
+    {key:'shuttle_run',label:'Shuttle Run',unit:'seconds',dual:false,inverse:true,scoreType:'linear',thresholds:[13.3,12.8,12.2,11.9,11.5,11.1,10.6,10.2,9.9,9.5],desc:'Two lines 30ft apart. Lower time = better.'},
+    {key:'shotput_left',label:'Shotput L',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[2,2.5,3,4.5,5.4,6.3,7.5,9,9.9,10.8],mball:true,desc:'Rotational throw from left side. 3 throws, best in metres.'},
+    {key:'shotput_right',label:'Shotput R',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[2,2.5,3,4.5,5.4,6.3,7.5,9,9.9,10.8],mball:true,desc:'Rotational throw from right side. 3 throws, best in metres.'},
+  ]
+};
+
+const RADAR_GOLF=[
+  {key:'long_drive',label:'Long Drive'},{key:'aussie_rules',label:'Aussie Rules'},
+  {key:'chipping',label:'Chipping'},{key:'putting',label:'Putting'},
+  {key:'bunker',label:'Bunker'},{key:'pitching',label:'Pitching'},
+  {key:'oncourse',label:'On Course'}
+];
+const RADAR_PHYSICAL=[
+  {key:'vertical_jump',label:'Vert Jump'},{key:'situp_throw',label:'Sit-Up & Throw'},
+  {key:'chest_pass',label:'Chest Pass'},{key:'shuttle_run',label:'Shuttle Run'},
+  {key:'shotput_left',label:'Shotput L'},{key:'shotput_right',label:'Shotput R'}
+];
+
+function calcLevel(test,v1,v2,gender){
+  const g=gender||'M';
+  if(test.scoreType==='linear'){const s=parseFloat(v1);if(isNaN(s))return null;const t=test.thresholds;if(test.inverse){for(let i=t.length-1;i>=0;i--){if(s<=t[i])return i+1;}return 1;}else{let lv=0;for(let i=0;i<t.length;i++){if(s>=t[i])lv=i+1;}return lv||null;}}
+  if(test.scoreType==='range'){const s=parseFloat(v1);if(isNaN(s))return null;for(let i=0;i<test.thresholds.length;i++){if(s>=test.thresholds[i].min&&s<=test.thresholds[i].max)return i+1;}if(s>=24)return 10;return null;}
+  if(test.scoreType==='putting'){const s=parseFloat(v1);if(isNaN(s))return null;if(s<=12)return 10;if(s<=13)return 9;if(s<=14)return 8;if(s<=15)return 7;if(s<=16)return 6;if(s<=17)return 5;if(s<=18)return 4;if(s<=19)return 3;if(s<=21)return 2;return 1;}
+  if(test.scoreType==='dual_drive'){const pts=parseFloat(v1),dist=parseFloat(v2);if(isNaN(pts)||isNaN(dist))return null;const t=test.thresholds[g];let lv=0;for(let i=0;i<t.length;i++){if(pts>=t[i].pts&&dist>=t[i].dist)lv=i+1;}return lv||null;}
+  if(test.scoreType==='bunker'){const green=parseFloat(v1),prox=parseFloat(v2);if(!isNaN(green)&&v1!==''){if(green>=5)return 6;if(green>=4)return 5;if(green>=3)return 4;if(green>=2)return 3;if(green>=1)return 2;return 1;}if(!isNaN(prox)&&v2!==''){if(prox<10)return 10;if(prox<=10)return 9;if(prox<=18)return 8;if(prox<=25)return 7;}return null;}
+  if(test.scoreType==='oncourse'){const stage=parseFloat(v1),par=parseFloat(v2);if(!isNaN(stage)&&v1!==''&&stage>=1&&stage<=4)return Math.round(stage);if(!isNaN(par)&&v2!==''){if(par<=-2)return 10;if(par<=0)return 9;if(par<=2)return 8;if(par<=4)return 7;if(par<=6)return 6;return 5;}return null;}
+  if(test.scoreType==='placeholder'){const s=parseInt(v1);if(isNaN(s)||s<1||s>10)return null;return s;}
+  return null;
+}
+
+// ── RADAR CHARTS ──
+function drawRadar(svgId,spokes,logs){
+  const svg=document.getElementById(svgId);if(!svg)return;
+  svg.innerHTML='';
+  const cx=130,cy=130,maxR=100,n=spokes.length;
+  function el(tag,attrs){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.keys(attrs).forEach(k=>e.setAttribute(k,attrs[k]));return e;}
+  function angle(i){return(Math.PI*2*i/n)-Math.PI/2;}
+  function pt(i,r){return{x:cx+r*Math.cos(angle(i)),y:cy+r*Math.sin(angle(i))};}
+  for(let ring=1;ring<=5;ring++){const r=maxR*(ring/5);const pts=[];for(let i=0;i<n;i++){const p=pt(i,r);pts.push(p.x+','+p.y);}svg.appendChild(el('polygon',{points:pts.join(' '),fill:'none',stroke:'#e0e0e0','stroke-width':'1'}));}
+  for(let i=0;i<n;i++){const p=pt(i,maxR);svg.appendChild(el('line',{x1:cx,y1:cy,x2:p.x,y2:p.y,stroke:'#e0e0e0','stroke-width':'1'}));}
+  const dataLevels=spokes.map(s=>{const tl=(logs||{})[s.key];if(!tl||!tl.length)return null;return tl[tl.length-1].level||null;});
+  const nonNull=dataLevels.filter(l=>l!==null);
+  const avgLv=nonNull.length?Math.round(nonNull.reduce((a,b)=>a+b,0)/nonNull.length):0;
+  const strokeColor=avgLv>0?BAND_COLORS[avgLv-1]:'#ccc';
+  const fillColor=avgLv>0?BAND_FILLS[avgLv-1]:'rgba(200,200,200,0.1)';
+  const dataPts=[];let hasAnyData=false;
+  dataLevels.forEach((lv,i)=>{const r=lv?maxR*(lv/10):0;if(lv)hasAnyData=true;const p=pt(i,r);dataPts.push(p.x+','+p.y);});
+  if(hasAnyData){
+    svg.appendChild(el('polygon',{points:dataPts.join(' '),fill:fillColor,stroke:strokeColor,'stroke-width':'2','stroke-linejoin':'round','opacity':'0.9'}));
+    dataLevels.forEach((lv,i)=>{if(!lv)return;const p=pt(i,maxR*(lv/10));svg.appendChild(el('circle',{cx:p.x,cy:p.y,r:'4',fill:strokeColor,stroke:'white','stroke-width':'1.5'}));});
+  }
+  spokes.forEach((s,i)=>{
+    const labelR=maxR+18;const p=pt(i,labelR);const lv=dataLevels[i];
+    const txt=el('text',{x:p.x,y:p.y,'text-anchor':'middle','dominant-baseline':'middle','font-size':'9','font-weight':'700','font-family':'Segoe UI,Arial,sans-serif',fill:lv?strokeColor:'#bbb'});
+    const ts1=document.createElementNS('http://www.w3.org/2000/svg','tspan');ts1.setAttribute('x',p.x);ts1.setAttribute('dy','0');ts1.textContent=s.label;
+    const ts2=document.createElementNS('http://www.w3.org/2000/svg','tspan');ts2.setAttribute('x',p.x);ts2.setAttribute('dy','11');ts2.textContent=lv?'L'+lv:'—';ts2.setAttribute('font-size','8');ts2.setAttribute('fill',lv?strokeColor:'#ccc');
+    txt.appendChild(ts1);txt.appendChild(ts2);svg.appendChild(txt);
+  });
+  svg.appendChild(el('circle',{cx:cx,cy:cy,r:'3',fill:'#ddd'}));
+}
+
+function buildRadarLegend(legendId,spokes,logs){
+  const el=document.getElementById(legendId);if(!el)return;el.innerHTML='';
+  const levels=spokes.map(s=>{const tl=(logs||{})[s.key];return(tl&&tl.length)?tl[tl.length-1].level:null;}).filter(l=>l!==null);
+  if(levels.length){
+    const avg=levels.reduce((a,b)=>a+b,0)/levels.length;
+    const avgRound=Math.round(avg);
+    const band=getBand(avgRound);
+    const item=document.createElement('div');item.className='radar-legend-item';
+    const dot=document.createElement('div');dot.className='radar-legend-dot';dot.style.background=BAND_COLORS[avgRound-1];
+    const lbl=document.createElement('span');lbl.textContent='Avg L'+avg.toFixed(1)+(band?' — '+band.label:'');
+    item.appendChild(dot);item.appendChild(lbl);el.appendChild(item);
+  }else{
+    const item=document.createElement('div');item.className='radar-legend-item';item.textContent='No data logged yet';el.appendChild(item);
+  }
+}
+
+function updateRadarCharts(logs){
+  const wrap=document.getElementById('radar-wrap');if(!wrap)return;
+  const allTests=[...BENCH_TESTS.golf,...BENCH_TESTS.physical];
+  const hasData=allTests.some(t=>{const tl=(logs||{})[t.key];return tl&&tl.length>0;});
+  if(!hasData){wrap.classList.remove('visible');return;}
+  wrap.classList.add('visible');
+  drawRadar('radar-golf',RADAR_GOLF,logs);
+  drawRadar('radar-physical',RADAR_PHYSICAL,logs);
+  buildRadarLegend('radar-golf-legend',RADAR_GOLF,logs);
+  buildRadarLegend('radar-physical-legend',RADAR_PHYSICAL,logs);
+}
+
+let benchLogs={};
+function today(){return new Date().toISOString().slice(0,10);}
+function formatDate(d){if(!d)return'';const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`;}
+
+function buildBenchSection(containerId,tests,gender){
+  const el=document.getElementById(containerId);el.innerHTML='';
+  tests.forEach(test=>{
+    const logs=benchLogs[test.key]||[];
+    const latest=logs.length?logs[logs.length-1]:null;
+    const first=logs.length>1?logs[0]:null;
+    let deltaHtml='';
+    if(first&&latest&&first.level&&latest.level){const diff=latest.level-first.level;if(diff>0)deltaHtml=`<span class="bench-delta up">▲ +${diff} level${diff>1?'s':''}</span>`;else if(diff<0)deltaHtml=`<span class="bench-delta down">▼ ${diff} level${Math.abs(diff)>1?'s':''}</span>`;else deltaHtml=`<span class="bench-delta flat">— No change</span>`;}
+    let currentHtml='<span style="font-size:11px;color:var(--light);">No entries yet</span>';
+    if(latest&&latest.level){const band=getBand(latest.level);currentHtml=`<span style="font-size:12px;font-weight:800;color:var(--dark);">Level ${latest.level}</span>${band?`<span class="bench-badge ${band.cls}" style="margin-left:6px;">${band.label}</span>`:''}${deltaHtml?` ${deltaHtml}`:''}`;}
+    const card=document.createElement('div');card.className='bench-test-card';
+    const hdr=document.createElement('div');hdr.className='bench-test-header';
+    hdr.innerHTML=`<div class="bench-test-name">${test.label}<small>${test.unit}</small></div><div class="bench-current">${currentHtml}<button class="bench-info-btn" onclick="toggleDesc('${test.key}')">ℹ️</button></div>`;
+    const body=document.createElement('div');body.className='bench-entry-area';
+    const desc=document.createElement('div');desc.className='bench-desc';desc.id=`bench-desc-${test.key}`;desc.textContent=test.desc;
+    const entryRow=document.createElement('div');entryRow.className='bench-entry-row';
+    if(test.dual){
+      const f1=document.createElement('div');f1.className='fr';f1.innerHTML=`<label>${test.f1}</label><input type="number" id="bench-v1-${test.key}" placeholder="—" style="font-size:15px;padding:8px 10px;">`;
+      const f2=document.createElement('div');f2.className='fr';f2.innerHTML=`<label>${test.f2}</label><input type="number" id="bench-v2-${test.key}" placeholder="—" style="font-size:15px;padding:8px 10px;">`;
+      entryRow.append(f1,f2);
+    }else{
+      const f1=document.createElement('div');f1.className='fr';f1.innerHTML=`<label>Score</label><input type="number" id="bench-v1-${test.key}" placeholder="—" style="font-size:15px;padding:8px 10px;">`;
+      entryRow.appendChild(f1);
+    }
+    const dateField=document.createElement('div');dateField.className='fr';dateField.innerHTML=`<label>Date</label><input type="date" id="bench-date-${test.key}" value="${today()}" style="font-size:13px;padding:8px 10px;">`;
+    const logBtn=document.createElement('div');logBtn.style.cssText='display:flex;align-items:flex-end;';
+    logBtn.innerHTML=`<button class="btn-sm btn-sm-g" onclick="logBenchEntry('${test.key}','${gender}')" style="white-space:nowrap;">+ Log Entry</button>`;
+    entryRow.append(dateField,logBtn);
+    const logList=document.createElement('div');logList.className='bench-log';logList.id=`bench-log-${test.key}`;
+    body.append(desc,entryRow,logList);card.append(hdr,body);el.appendChild(card);
+    renderBenchLog(test.key,gender);
+  });
+}
+
+function logBenchEntry(testKey,gender){
+  const test=[...BENCH_TESTS.golf,...BENCH_TESTS.physical].find(t=>t.key===testKey);if(!test)return;
+  const v1=document.getElementById(`bench-v1-${testKey}`)?.value||'';
+  const v2=document.getElementById(`bench-v2-${testKey}`)?.value||'';
+  const date=document.getElementById(`bench-date-${testKey}`)?.value||today();
+  if(!v1&&!v2){alert('Please enter a score before logging.');return;}
+  const lv=calcLevel(test,v1,v2,gender);
+  if(!benchLogs[testKey])benchLogs[testKey]=[];
+  benchLogs[testKey].push({id:Date.now(),date,v1,v2,level:lv});
+  const v1el=document.getElementById(`bench-v1-${testKey}`);if(v1el)v1el.value='';
+  const v2el=document.getElementById(`bench-v2-${testKey}`);if(v2el)v2el.value='';
+  const del=document.getElementById(`bench-date-${testKey}`);if(del)del.value=today();
+  const g=document.getElementById('j-gender')?.value||'M';
+  const isGolf=BENCH_TESTS.golf.find(t=>t.key===testKey);
+  buildBenchSection(isGolf?'bench-golf':'bench-physical',isGolf?BENCH_TESTS.golf:BENCH_TESTS.physical,g);
+  updateRadarCharts(benchLogs);
+}
+
+function deleteBenchEntry(testKey,entryId,gender){
+  if(!benchLogs[testKey])return;
+  benchLogs[testKey]=benchLogs[testKey].filter(e=>e.id!==entryId);
+  const isGolf=BENCH_TESTS.golf.find(t=>t.key===testKey);
+  buildBenchSection(isGolf?'bench-golf':'bench-physical',isGolf?BENCH_TESTS.golf:BENCH_TESTS.physical,gender);
+  updateRadarCharts(benchLogs);
+}
+
+function renderBenchLog(testKey,gender){
+  const el=document.getElementById(`bench-log-${testKey}`);if(!el)return;
+  const allLogs=(benchLogs[testKey]||[]).slice().reverse();
+  const logs=allLogs.slice(0,3);const hidden=allLogs.length-logs.length;
+  if(!allLogs.length){el.innerHTML=`<p class="bench-no-entries">No entries yet — log a score above.</p>`;return;}
+  el.innerHTML=logs.map(e=>{
+    const band=e.level?getBand(e.level):null;
+    const scoreDisplay=e.v2?`${e.v1} / ${e.v2}`:e.v1;
+    const levelDisplay=e.level?`<span class="bench-badge ${band?.cls||''}" style="font-size:10px;">L${e.level}${band?` · ${band.label}`:''}</span>`:'<span style="font-size:10px;color:var(--light);">—</span>';
+    return`<div class="bench-log-row"><span class="log-date">${formatDate(e.date)}</span><span class="log-score">${scoreDisplay}</span>${levelDisplay}<span class="bench-log-del" onclick="deleteBenchEntry('${testKey}',${e.id},'${gender}')" title="Remove">✕</span></div>`;
+  }).join('')+(hidden>0?`<p style="font-size:10px;color:var(--light);padding:4px 2px;">+ ${hidden} earlier entr${hidden>1?'ies':'y'} saved</p>`:'');
+}
+
+function toggleDesc(key){document.getElementById(`bench-desc-${key}`)?.classList.toggle('open');}
+function getMballRec(w){const wt=parseFloat(w);if(isNaN(wt))return null;if(wt<20)return'1kg';if(wt<40)return'2kg';return'3kg';}
+function updateMballTip(){const tip=document.getElementById('mball-tip-display');if(!tip)return;const rec=getMballRec(document.getElementById('j-weight')?.value);if(rec){tip.style.display='inline-block';tip.textContent=`⚖️ Medicine ball: ${rec}`;}else tip.style.display='none';}
+function rebuildBench(){const g=document.getElementById('j-gender')?.value||'M';buildBenchSection('bench-golf',BENCH_TESTS.golf,g);buildBenchSection('bench-physical',BENCH_TESTS.physical,g);updateMballTip();}
+document.addEventListener('change',e=>{if(e.target.id==='j-gender'){rebuildBench();updateRadarCharts(benchLogs);}});
+
+// ── CURRICULUM ──
+const CURRIC_SKILLS=[
+  {key:'grip',icon:'🤝',label:'Grip',bronze:'Hands Together\nPalms Facing',silver:'Functional Grip\nOverlap / Interlock',gold:'Established functional grip pattern\nVariations for shot patterns',compete:'Grip variations to control flight and shape'},
+  {key:'alignment',icon:'🎯',label:'Alignment & Stance',bronze:'Stance width — shoulder/hip width\nBall position in middle of feet',silver:'Aiming Club face and Body\nBall position changes for different clubs',gold:'Fully developed Pre-Shot Routine\nBall position to change flight',compete:'Advanced pre-shot routine\nBall position to influence flight and shape'},
+  {key:'posture',icon:'🧍',label:'Posture',bronze:'Developed Hip Hinge Pattern\nSoft Knees\nArms Hang Under Shoulders',silver:'Athletic Posture\nEngaged Core',gold:'Established, consistent posture patterns',compete:'Posture variations for different shots and lies'},
+  {key:'balance',icon:'⚖️',label:'Balance',bronze:'Neutral Balanced Set Up\nUnderstand 50/50 Concept\nFinish in Balanced Position',silver:'50/50 weight distribution awareness\nSlopes — Uphill / Downhill set up',gold:'Manipulate balance as required\nWeight Transfer and Pressure',compete:'Full balance and pressure control'},
+  {key:'etiquette',icon:'🎩',label:'Rules, Safety & Etiquette',bronze:'Learn and Follow Safety Rules\nQuiet when others are hitting\nGolf Terminology',silver:'Ball Marking Rules\nRaking Bunkers\nFixing Pitch Marks',gold:'Take on leadership roles in program',compete:'Full knowledge and application of Rules of Golf'},
+  {key:'putting',icon:'🕳️',label:'Putting',bronze:'Head and Body Still\nEven Length Back and Through',silver:'Refine Distance Control\nGood at short putting 3ft — 9/10',gold:'TPI Spiral Challenge\n18 Hole speed/tee challenge',compete:'Advanced speed and break control'},
+  {key:'chipping',icon:'🏌️',label:'Chipping',bronze:'Contact — Low Point — Ball in the Air\nLand on the Green',silver:'Chip into Target Circle\nFace Adjustments — Lie — Grip — Bounce',gold:'Variable Slopes, Lies, Trajectories',compete:'Full variable lie, slope and trajectory control'},
+  {key:'bunkers',icon:'🏖️',label:'Bunkers',bronze:'Splash Sand onto the Green\nLand Ball on Green',silver:'Land Ball in Target Circle\nFace Adjustments',gold:'Finish in Target Circle around Hole\nVariable Lies and Slopes',compete:'Full spin, distance and trajectory control'},
+  {key:'pitching',icon:'🎯',label:'Pitching',bronze:'Using the LOFT to hit the ball in the air\nSwing Length to Control Distance',silver:'Variable Club Options\nSwing Tempo / Energy for Distance',gold:'Slopes — Uphill / Downhill\nVariable Trajectories',compete:'Full distance, trajectory and spin control'},
+  {key:'longgame',icon:'🏌️',label:'Long Game',bronze:'Low Point Contact\nCarry v Total Distance\nTempo',silver:'Flight Control — High / Low\nAussie Rules & Long Drive Challenges',gold:'Shot Shaping — Draws / Fades\n9 Shot Windows',compete:'Full 9-shot window mastery'},
+  {key:'oncourse',icon:'🗺️',label:'On Course',bronze:'Course Etiquette\nRules and Procedures\nOperation 36 Levels 1-3',silver:'Longer Modified Course\nOperation 36 Level 4-5',gold:'Full Course Length\nSkills Games',compete:'Full competition course management'}
+];
+const LEVELS=['bronze','silver','gold','compete'];
+const LEVEL_LABELS={bronze:'🥉 Bronze',silver:'🥈 Silver',gold:'🥇 Gold',compete:'🏆 Compete'};
+const LEVEL_COLORS={bronze:{bg:'#f5ece0',col:'#8b5e2a',border:'#8b5e2a'},silver:{bg:'#e0e7ef',col:'#4a6b8b',border:'#4a6b8b'},gold:{bg:'#fdf3d8',col:'#9a7020',border:'#c9a84c'},compete:{bg:'#d0e4f7',col:'#1a3f6b',border:'#1a3f6b'}};
+let curricData={},curricView='grid',curricLevel='bronze';
+function getCurricVal(key,lv){if(curricData[key]&&curricData[key][lv]!==undefined)return curricData[key][lv];const def=CURRIC_SKILLS.find(s=>s.key===key);return def?def[lv]||'':'';}
+function buildCurricAccordion(){const el=document.getElementById('curric-skill-accordion');el.innerHTML='';CURRIC_SKILLS.forEach(skill=>{const card=document.createElement('div');card.className='curric-skill-card';const hdr=document.createElement('div');hdr.className='curric-skill-header';hdr.innerHTML=`<h4><span>${skill.icon}</span>${skill.label}</h4><span class="curric-chevron" id="chev-${skill.key}">▼</span>`;hdr.onclick=()=>toggleCurricSkill(skill.key);const body=document.createElement('div');body.className='curric-skill-body';body.id=`curric-body-${skill.key}`;let labelsHtml=`<div class="curric-grid" style="margin-bottom:6px;">`;LEVELS.forEach(lv=>{const c=LEVEL_COLORS[lv];labelsHtml+=`<div class="curric-col-label" style="background:${c.bg};color:${c.col};">${LEVEL_LABELS[lv]}</div>`;});labelsHtml+='</div>';let cellsHtml=`<div class="curric-grid">`;LEVELS.forEach(lv=>{cellsHtml+=`<div contenteditable="true" class="curric-cell" style="border-left-color:${LEVEL_COLORS[lv].border}" id="cc-${skill.key}-${lv}" data-key="${skill.key}" data-level="${lv}">${getCurricVal(skill.key,lv)}</div>`;});cellsHtml+='</div>';body.innerHTML=labelsHtml+cellsHtml;card.append(hdr,body);el.appendChild(card);});}
+function toggleCurricSkill(key){const body=document.getElementById(`curric-body-${key}`),chev=document.getElementById(`chev-${key}`),open=body.classList.toggle('open');if(chev)chev.classList.toggle('open',open);}
+function renderCurricFocus(){const el=document.getElementById('curric-focus-content');el.innerHTML='';const lv=curricLevel,c=LEVEL_COLORS[lv];CURRIC_SKILLS.forEach(skill=>{const card=document.createElement('div');card.className='curric-skill-card';card.style.borderTop=`3px solid ${c.border}`;card.innerHTML=`<div style="padding:12px 14px 6px;display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">${skill.icon}</span><strong style="font-size:13px;color:${c.col};">${skill.label}</strong></div><div style="padding:0 14px 14px;"><div contenteditable="true" class="curric-cell" style="border-left-color:${c.border}" id="ccf-${skill.key}-${lv}" data-key="${skill.key}" data-level="${lv}">${getCurricVal(skill.key,lv)}</div></div>`;el.appendChild(card);});}
+function showCurricLevel(lv){curricLevel=lv;LEVELS.forEach(l=>{const btn=document.getElementById(`cltab-${l}`),c=LEVEL_COLORS[l];if(l===lv){btn.style.background=c.bg;btn.style.color=c.col;btn.style.borderBottom=`3px solid ${c.border}`;}else{btn.style.background='#f0f0f0';btn.style.color='#999';btn.style.borderBottom='3px solid transparent';}});renderCurricFocus();}
+function setCurricView(v){curricView=v;document.getElementById('curric-view-grid-panel').style.display=v==='grid'?'block':'none';document.getElementById('curric-view-focus-panel').style.display=v==='focus'?'block':'none';const bg=document.getElementById('curric-view-grid'),bf=document.getElementById('curric-view-focus');bg.className='btn-sm '+(v==='grid'?'btn-sm-g':'');bg.style.background=v==='grid'?'var(--blue)':'#eee';bg.style.color=v==='grid'?'white':'#555';bf.className='btn-sm '+(v==='focus'?'btn-sm-g':'');bf.style.background=v==='focus'?'var(--blue)':'#eee';bf.style.color=v==='focus'?'white':'#555';if(v==='focus')renderCurricFocus();}
+function collectCurricFromDOM(){document.querySelectorAll('[id^="cc-"],[id^="ccf-"]').forEach(el=>{const key=el.dataset.key,lv=el.dataset.level;if(!curricData[key])curricData[key]={};curricData[key][lv]=el.innerText;});}
+async function saveCurriculum(){collectCurricFromDOM();await dbSet('curriculum',curricData);flash('curric-flash');flash('curric-flash2');}
+async function loadCurriculum(){const saved=await dbGet('curriculum');if(saved)curricData=saved;buildCurricAccordion();}
+
+// ── DB ──
+async function dbGet(key){try{const{data,error}=await sb.from('jdp_data').select('value').eq('key',k(key)).limit(1).maybeSingle();if(error||!data)return null;return JSON.parse(data.value);}catch(e){return null;}}
+async function dbSet(key,val){try{await sb.from('jdp_data').upsert({key:k(key),value:JSON.stringify(val)},{onConflict:'key'});showSaved('✓ Synced');}catch(e){showSaved('⚠️ Save failed',true);}}
+function showSaved(msg,err){const dot=document.getElementById('sync-dot'),txt=document.getElementById('sync-msg');dot.className='sync-dot'+(err?' off':'');txt.textContent=msg;setTimeout(()=>{dot.className='sync-dot';txt.textContent='Live sync on';},2500);}
+function flash(id){const el=document.getElementById(id);if(el){el.style.display='block';setTimeout(()=>el.style.display='none',3000);}}
+function show(id,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');el.classList.add('active');if(id==='overview')renderOverview();}
+
+// ── CHECKLISTS ──
+const DEF={chk_setup:['All coaches reviewed the Four Pillars & Guiding Principles','Shared coaching language and cues agreed upon','Lead coach assigned to each squad','Program coordinator confirmed','Session structure walked through for all squads','Equipment inventory confirmed','Venue allocation and tee time bookings made','Safety and safeguarding procedures reviewed','Junior profiles and medical conditions reviewed'],chk_do:['Use questioning over instruction ("What did you notice?")','Praise effort, process & improvement — not just results','Keep all juniors active and engaged throughout','Deliver warm-up and cool-down every session, no exceptions','Include a mental game moment in the cool-down debrief','Submit session notes summary after each session'],chk_avoid:['Overloading juniors with too many technical cues at once','Skipping warm-up or cool-down due to time pressure','Comparing juniors to each other publicly','Prioritising performance over enjoyment in Bronze Squad'],mental:['I stay calm when I make a mistake','I have a routine before each shot','I enjoy competing against others','I know how to reset after a bad hole']};
+async function buildChk(containerId,key){const el=document.getElementById(containerId);if(!el)return;const texts=await dbGet(`chk_texts_${key}`)||DEF[`chk_${key}`]||[];const checks=await dbGet(`chk_state_${key}`)||{};el.innerHTML='';texts.forEach((text,i)=>{const label=document.createElement('label');const cb=document.createElement('input');cb.type='checkbox';cb.checked=checks[i]||false;const span=document.createElement('span');span.contentEditable=true;span.textContent=text;let deb;span.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(async()=>{const cur=await dbGet(`chk_texts_${key}`)||DEF[`chk_${key}`]||[];cur[i]=span.textContent;await dbSet(`chk_texts_${key}`,cur);},800);});cb.addEventListener('change',async()=>{const cur=await dbGet(`chk_state_${key}`)||{};cur[i]=cb.checked;await dbSet(`chk_state_${key}`,cur);});label.append(cb,span);el.appendChild(label);});}
+
+// ── PLANNER ──
+const DEF_PLANNER={bronze:[{type:'Skills',focus:'Grip, Setup & Putting Games',coach:'',notes:''},{type:'Skills',focus:'Chipping Basics',coach:'',notes:''},{type:'Skills',focus:'Pitching Introduction',coach:'',notes:''},{type:'Skills',focus:'Full Swing Fundamentals',coach:'',notes:''},{type:'Skills',focus:'Short Game Circuit',coach:'',notes:''},{type:'Skills',focus:'Decision Making Games',coach:'',notes:''},{type:'Skills',focus:'Fun Competition',coach:'',notes:''},{type:'Skills',focus:'Review & Practice Games',coach:'',notes:''},{type:'Skills',focus:'Match Play Introduction',coach:'',notes:''},{type:'Skills',focus:'End of Term Showcase',coach:'',notes:''}],silver:[{type:'Skills',focus:'Assessment & Goals',coach:'',notes:''},{type:'Skills',focus:'Ball-Striking Focus',coach:'',notes:''},{type:'Skills',focus:'Short Game Pressure',coach:'',notes:''},{type:'Skills',focus:'Course Management',coach:'',notes:''},{type:'Skills',focus:'Competition Simulation',coach:'',notes:''},{type:'Skills',focus:'Mental Game Focus',coach:'',notes:''},{type:'Skills',focus:'Advanced Short Game',coach:'',notes:''},{type:'Skills',focus:'Stats & Self-Analysis',coach:'',notes:''},{type:'Skills',focus:'Match Play Challenge',coach:'',notes:''},{type:'Skills',focus:'End of Term Review & Goal Setting',coach:'',notes:''}],gold:[{type:'Skills + On-Course',focus:'Goals & On-Course Assessment',coach:'',notes:''},{type:'Skills + On-Course',focus:'Ball-Striking & Progressive Challenge',coach:'',notes:''},{type:'Skills + On-Course',focus:'Short Game & On-Course Play',coach:'',notes:''},{type:'Skills + On-Course',focus:'Course Management',coach:'',notes:''},{type:'Skills + On-Course',focus:'Competition Simulation',coach:'',notes:''},{type:'Skills + On-Course',focus:'Mental Game Focus',coach:'',notes:''},{type:'Skills + On-Course',focus:'Advanced Short Game',coach:'',notes:''},{type:'Skills + On-Course',focus:'Stats & Self-Analysis',coach:'',notes:''},{type:'Skills + On-Course',focus:'Match Play Challenge',coach:'',notes:''},{type:'Skills + On-Course',focus:'End of Term Review & Goal Setting',coach:'',notes:''}]};
+const SQUAD_COLORS={bronze:'#f5ece0',silver:'#e0e7ef',gold:'#fdf3d8'};
+function showPlannerSquad(squad){['bronze','silver','gold'].forEach(s=>{document.getElementById(`planner-${s}`).style.display=s===squad?'block':'none';const btn=document.getElementById(`ptab-${s}`);const colors={bronze:{bg:'#f5ece0',color:'var(--bronze)',border:'var(--bronze)'},silver:{bg:'#e0e7ef',color:'var(--silver)',border:'var(--silver)'},gold:{bg:'#fdf3d8',color:'#9a7020',border:'var(--gold)'}};if(s===squad){btn.style.background=colors[s].bg;btn.style.color=colors[s].color;btn.style.borderBottom=`3px solid ${colors[s].border}`;}else{btn.style.background='#f0f0f0';btn.style.color='#999';btn.style.borderBottom='3px solid transparent';}});}
+async function buildPlanner(){for(const squad of['bronze','silver','gold']){const data=await dbGet(`planner_${squad}`)||DEF_PLANNER[squad];const tb=document.getElementById(`planner-body-${squad}`);tb.innerHTML='';data.forEach((row,i)=>{const tr=document.createElement('tr');const wkTd=document.createElement('td');wkTd.className='wk-num';wkTd.style.background=SQUAD_COLORS[squad];wkTd.textContent=`W${i+1}`;tr.appendChild(wkTd);['type','focus','coach','notes'].forEach(col=>{const td=document.createElement('td');td.style.background=SQUAD_COLORS[squad];td.style.verticalAlign='top';const div=document.createElement('div');div.contentEditable=true;div.textContent=row[col]||'';div.style.cssText='outline:none;min-height:20px;padding:2px 4px;border-radius:4px;';div.addEventListener('focus',()=>{div.style.background='rgba(26,63,107,.1)';div.style.boxShadow='0 0 0 2px rgba(26,63,107,.25)';});div.addEventListener('blur',()=>{div.style.background='';div.style.boxShadow='';});let deb;div.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(async()=>{const cur=await dbGet(`planner_${squad}`)||DEF_PLANNER[squad];cur[i][col]=div.textContent;await dbSet(`planner_${squad}`,cur);},800);});td.appendChild(div);tr.appendChild(td);});tb.appendChild(tr);});}const td=await dbGet('term_details')||{};['term-name','term-start','term-notes'].forEach(id=>{const el=document.getElementById(id);if(el&&td[id])el.value=td[id];});}
+async function saveTermDetails(){const td={'term-name':document.getElementById('term-name').value,'term-start':document.getElementById('term-start').value,'term-notes':document.getElementById('term-notes').value};await dbSet('term_details',td);flash('term-flash');}
+
+// ── ON-COURSE ──
+const STM_STAGES=[{label:'Stage 1',dist:'50m holes',par:36},{label:'Stage 2',dist:'100m holes',par:36},{label:'Stage 3',dist:'150m holes',par:36},{label:'Stage 4',dist:'200m holes',par:36}];
+let ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:''};
+function updateOCSection(){const squad=document.getElementById('j-tier').value;const el=document.getElementById('oc-section');if(squad.includes('Gold'))renderGoldOC(el);else if(squad.includes('Silver'))renderSilverOC(el);else renderBronzeOC(el);}
+function renderGoldOC(el){let html=`<div style="border-top:2px solid var(--gold);margin-top:14px;padding-top:14px;"><div class="sec-label" style="color:#9a7020;">⛳ On-Course Assessment — Gold Squad</div><p style="font-size:10px;color:var(--mid);margin-bottom:12px;">Progressive distance challenge. Pass = 9 holes in ≤36 shots.</p>`;STM_STAGES.forEach((s,i)=>{const d=ocData.stages[i],passed=d.passed;html+=`<div class="stage-card${passed?' passed':''}" id="stage-card-${i}"><div class="stage-header"><div class="stage-title">🏌️ ${s.label} — ${s.dist}</div><span class="stage-badge">${passed?'✅ Passed':'⏳ In Progress'}</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;"><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">9-Hole Score</label><input type="number" id="oc-s${i}-score" value="${d.score||''}" placeholder="e.g. 34" min="9" max="80" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;" oninput="checkStagePass(${i})"></div><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Date Played</label><input type="date" id="oc-s${i}-date" value="${d.date||''}" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;"></div></div><div class="fr" style="margin-bottom:6px;"><label style="font-size:10px;">Coach Notes</label><textarea id="oc-s${i}-notes" rows="2" class="oc-notes-area" style="min-height:56px;">${d.notes||''}</textarea></div><div class="pass-flag${passed?' passed':''}" id="oc-s${i}-flag">${passed?`✅ Passed — Score: ${d.score}${d.date?' on '+d.date:''}`:`🎯 Need ≤${s.par} shots to pass`}</div></div>`;});html+=`<div style="margin-top:14px;"><div class="sec-label" style="color:#9a7020;">🏅 9-Hole Score Log</div><div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;"><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Score</label><input type="number" id="nh-score-input" placeholder="e.g. 38" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:15px;text-align:center;background:#fafafa;font-family:inherit;"></div><div class="fr" style="margin-bottom:0;"><label style="font-size:10px;">Date</label><input type="date" id="nh-date-input" value="${today()}" style="border:1px solid #ddd;border-radius:6px;padding:8px;font-size:13px;background:#fafafa;font-family:inherit;"></div><button class="btn-sm btn-sm-g" onclick="addNineHole()">+ Log</button></div><div id="nine-hole-log-list"></div></div></div>`;el.innerHTML=html;renderNineHoleLog();}
+function checkStagePass(i){const score=parseInt(document.getElementById(`oc-s${i}-score`)?.value);const par=STM_STAGES[i].par,date=document.getElementById(`oc-s${i}-date`)?.value;const flag=document.getElementById(`oc-s${i}-flag`),card=document.getElementById(`stage-card-${i}`),badge=card?.querySelector('.stage-badge');if(!isNaN(score)&&score<=par){ocData.stages[i].passed=true;if(flag){flag.className='pass-flag passed';flag.textContent=`✅ Passed — Score: ${score}${date?' on '+date:''}`;}if(card)card.classList.add('passed');if(badge)badge.textContent='✅ Passed';}else{ocData.stages[i].passed=false;if(flag){flag.className='pass-flag';flag.textContent=`🎯 Need ≤${par} shots to pass`;}if(card)card.classList.remove('passed');if(badge)badge.textContent='⏳ In Progress';}}
+function addNineHole(){const score=parseInt(document.getElementById('nh-score-input')?.value),date=document.getElementById('nh-date-input')?.value;if(isNaN(score)||score<9){alert('Please enter a valid 9-hole score.');return;}ocData.nineHoleLogs.unshift({score,date:date||'',id:Date.now()});document.getElementById('nh-score-input').value='';document.getElementById('nh-date-input').value=today();renderNineHoleLog();}
+function removeNineHole(id){ocData.nineHoleLogs=ocData.nineHoleLogs.filter(r=>r.id!==id);renderNineHoleLog();}
+function renderNineHoleLog(){const el=document.getElementById('nine-hole-log-list');if(!el)return;if(!ocData.nineHoleLogs.length){el.innerHTML='<p style="font-size:11px;color:var(--light);padding:6px 0;">No rounds logged yet.</p>';return;}const best=Math.min(...ocData.nineHoleLogs.map(r=>r.score));let html=`<div class="nine-hole-best">🏆 Best: ${best} shots</div>`;ocData.nineHoleLogs.forEach(r=>{html+=`<div class="nine-hole-row"><span>${formatDate(r.date)||'No date'}</span><span class="nh-score">${r.score} shots</span><span onclick="removeNineHole(${r.id})" style="cursor:pointer;color:#ccc;font-size:14px;padding:0 4px;">✕</span></div>`;});el.innerHTML=html;}
+function renderSilverOC(el){el.innerHTML=`<div style="border-top:2px solid var(--silver);margin-top:14px;padding-top:14px;"><div class="sec-label" style="color:var(--silver);">⛳ On-Course Notes — Silver Squad</div><textarea id="oc-silver-notes" class="oc-notes-area" rows="3" placeholder="e.g. Week 3 on-course...">${ocData.silverNotes||''}</textarea></div>`;}
+function renderBronzeOC(el){el.innerHTML=`<div style="border-top:2px solid var(--bronze);margin-top:14px;padding-top:14px;"><div class="sec-label" style="color:var(--bronze);">⛳ On-Course Notes — Bronze Squad</div><textarea id="oc-bronze-notes" class="oc-notes-area" rows="3" placeholder="e.g. Introductory on-course visit...">${ocData.bronzeNotes||''}</textarea></div>`;}
+function collectOCData(){const squad=document.getElementById('j-tier').value;if(squad.includes('Gold')){STM_STAGES.forEach((_,i)=>{ocData.stages[i].score=document.getElementById(`oc-s${i}-score`)?.value||'';ocData.stages[i].date=document.getElementById(`oc-s${i}-date`)?.value||'';ocData.stages[i].notes=document.getElementById(`oc-s${i}-notes`)?.value||'';});}else if(squad.includes('Silver')){ocData.silverNotes=document.getElementById('oc-silver-notes')?.value||'';}else{ocData.bronzeNotes=document.getElementById('oc-bronze-notes')?.value||'';}return JSON.parse(JSON.stringify(ocData));}
+
+// ── MENTAL ──
+async function buildMental(){const el=document.getElementById('mental-qs');if(!el)return;const qs=await dbGet('mental_qs')||DEF.mental;el.innerHTML='';qs.forEach((q,qi)=>{const wrap=document.createElement('div');wrap.className='mental-card';const ql=document.createElement('div');ql.className='mental-q';ql.contentEditable=true;ql.textContent=q;let deb;ql.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(async()=>{const cur=await dbGet('mental_qs')||DEF.mental;cur[qi]=ql.textContent;await dbSet('mental_qs',cur);},800);});const stars=document.createElement('div');stars.style.cssText='display:flex;gap:8px;';for(let i=1;i<=5;i++){const s=document.createElement('span');s.className='star';s.textContent='★';s.onclick=()=>stars.querySelectorAll('.star').forEach((st,j)=>st.classList.toggle('on',j<i));stars.appendChild(s);}wrap.append(ql,stars);el.appendChild(wrap);});}
+function getMentalRatings(){const r={};document.querySelectorAll('.mental-card').forEach((c,qi)=>{let v=0;c.querySelectorAll('.star.on').forEach(()=>v++);r[qi]=v;});return r;}
+function setMentalRatings(r){document.querySelectorAll('.mental-card').forEach((c,qi)=>{const v=r?.[qi]||0;c.querySelectorAll('.star').forEach((s,j)=>s.classList.toggle('on',j<v));});}
+
+// ── PROFILES ──
+let allProfiles=[];
+async function loadAllProfiles(){allProfiles=await dbGet('profiles')||[];populateJuniorDropdown();renderProfiles();}
+function populateJuniorDropdown(){const sel=document.getElementById('junior-select');const cur=sel.value;sel.innerHTML='<option value="">— Select a junior —</option>';['Gold Squad','Silver Squad','Bronze Squad'].forEach(sl=>{const grp=allProfiles.filter(p=>p.tier&&p.tier.includes(sl.split(' ')[0]));if(grp.length){const og=document.createElement('optgroup');og.label=sl;grp.forEach(p=>{const opt=document.createElement('option');opt.value=p.id;opt.textContent=p.name;if(String(p.id)===String(cur))opt.selected=true;og.appendChild(opt);});sel.appendChild(og);}});}
+
+function loadJuniorProfile(){
+  const id=document.getElementById('junior-select').value;if(!id){newJuniorForm();return;}
+  const p=allProfiles.find(x=>String(x.id)===String(id));if(!p)return;
+  document.getElementById('form-title').textContent='✏️ Update Junior Profile';
+  document.getElementById('j-id').value=p.id;
+  ['name','dob','hcp','parent','mobile','emerg','medical','goal','video','weight','pemail','jemail'].forEach(f=>{const el=document.getElementById(`j-${f}`);if(el)el.value=p[f]||'';});
+  document.getElementById('j-gender').value=p.gender||'M';
+  document.getElementById('j-tier').value=p.tier||'Bronze Squad';
+  document.getElementById('j-mental-more').value=p.mentalMore||'';
+  document.getElementById('j-mental-less').value=p.mentalLess||'';
+  document.getElementById('j-mental-learn').value=p.mentalLearn||'';
+  document.getElementById('btn-video-open').style.display=p.video?'inline-block':'none';
+  document.getElementById('btn-generate-report').style.display='inline-block';
+  document.getElementById('btn-template-report').style.display='inline-block';
+  benchLogs=p.benchLogs||{};
+  rebuildBench();
+  updateRadarCharts(benchLogs);
+  if(p.oc)ocData=JSON.parse(JSON.stringify(p.oc));
+  else ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:''};
+  updateOCSection();setMentalRatings(p.mentalRatings||{});updateMballTip();
+  window.scrollTo({top:document.getElementById('radar-wrap').offsetTop-80,behavior:'smooth'});
+}
+
+function newJuniorForm(){
+  document.getElementById('form-title').textContent='➕ New Junior Profile';
+  document.getElementById('junior-select').value='';
+  document.getElementById('j-id').value='';
+  ['name','dob','hcp','parent','mobile','emerg','medical','goal','video','weight'].forEach(f=>{const el=document.getElementById(`j-${f}`);if(el)el.value='';});
+  document.getElementById('j-gender').value='M';
+  document.getElementById('j-tier').value='Bronze Squad';
+  document.getElementById('btn-video-open').style.display='none';
+  document.getElementById('btn-generate-report').style.display='none';
+  document.getElementById('btn-template-report').style.display='none';
+  benchLogs={};rebuildBench();
+  const wrap=document.getElementById('radar-wrap');if(wrap)wrap.classList.remove('visible');
+  ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:''};
+  updateOCSection();setMentalRatings({});updateMballTip();hideTemplateReport();
+}
+
+function openVideo(){const url=document.getElementById('j-video').value;if(url)window.open(url,'_blank');}
+
+async function saveProfile(){
+  const name=document.getElementById('j-name').value.trim();if(!name){alert('Please enter a junior name.');return;}
+  const existingId=document.getElementById('j-id').value;const oc=collectOCData();
+  const profile={id:existingId?Number(existingId):Date.now(),name,dob:document.getElementById('j-dob').value,gender:document.getElementById('j-gender').value,weight:document.getElementById('j-weight').value,hcp:document.getElementById('j-hcp').value,tier:document.getElementById('j-tier').value,parent:document.getElementById('j-parent').value,mobile:document.getElementById('j-mobile').value,emerg:document.getElementById('j-emerg').value,medical:document.getElementById('j-medical').value,goal:document.getElementById('j-goal').value,video:document.getElementById('j-video').value,pemail:document.getElementById('j-pemail').value,jemail:document.getElementById('j-jemail').value,mentalMore:document.getElementById('j-mental-more').value,mentalLess:document.getElementById('j-mental-less').value,mentalLearn:document.getElementById('j-mental-learn').value,mentalRatings:getMentalRatings(),benchLogs:JSON.parse(JSON.stringify(benchLogs)),oc};
+  if(existingId){const idx=allProfiles.findIndex(p=>String(p.id)===String(existingId));if(idx>=0)allProfiles[idx]=profile;else allProfiles.push(profile);}else allProfiles.push(profile);
+  await dbSet('profiles',allProfiles);flash('profile-flash');await loadAllProfiles();
+  document.getElementById('junior-select').value=profile.id;document.getElementById('j-id').value=profile.id;
+  document.getElementById('form-title').textContent='✏️ Update Junior Profile';
+  if(profile.video)document.getElementById('btn-video-open').style.display='inline-block';
+  document.getElementById('btn-generate-report').style.display='inline-block';
+  document.getElementById('btn-template-report').style.display='inline-block';
+  updateRadarCharts(benchLogs);
+}
+
+async function deleteProfile(id,e){e.stopPropagation();if(!confirm('Delete this junior profile?'))return;allProfiles=allProfiles.filter(p=>String(p.id)!==String(id));await dbSet('profiles',allProfiles);await loadAllProfiles();newJuniorForm();}
+
+function renderProfiles(){
+  const list=document.getElementById('profile-list'),count=document.getElementById('profile-count');
+  count.textContent=allProfiles.length?`(${allProfiles.length})`:'';
+  if(!allProfiles.length){list.innerHTML='<p style="font-size:12px;color:var(--light);">No profiles yet.</p>';return;}
+  list.innerHTML='';
+  allProfiles.forEach(p=>{
+    const cls=p.tier?.includes('Gold')?'gold':p.tier?.includes('Silver')?'silver':'bronze';
+    const icon=p.tier?.includes('Gold')?'🥇':p.tier?.includes('Silver')?'🥈':'🥉';
+    const g=p.gender||'M';
+    let benchSummary='';
+    if(p.benchLogs){const highlights=[];const ldLogs=p.benchLogs['long_drive'];const vjLogs=p.benchLogs['vertical_jump'];if(ldLogs?.length){const latest=ldLogs[ldLogs.length-1];if(latest.level)highlights.push(`Drive L${latest.level}`);}if(vjLogs?.length){const latest=vjLogs[vjLogs.length-1];if(latest.level)highlights.push(`Jump L${latest.level}`);}if(highlights.length)benchSummary=`<span style="font-size:10px;color:var(--blue);margin-left:6px;">📊 ${highlights.join(' · ')}</span>`;}
+    const item=document.createElement('div');item.className='profile-item';
+    item.onclick=()=>{document.getElementById('junior-select').value=p.id;loadJuniorProfile();show('profiling',document.querySelector('.tab:nth-child(4)'));};
+    item.innerHTML=`<div class="pav ${cls}">${icon}</div><div class="pinfo"><h4>${p.name}</h4><p>${p.tier||'—'} · HCP: ${p.hcp||'—'} · ${g==='F'?'Female':'Male'}${benchSummary}</p></div><span class="badge ${cls}">${cls}</span><span class="pdel" onclick="deleteProfile(${p.id},event)" title="Delete">✕</span>`;
+    list.appendChild(item);
+  });
+}
+
+// ── NOTES ──
+async function saveNotes(){const note={id:Date.now(),date:document.getElementById('sn-date').value,tier:document.getElementById('sn-tier').value,coach:document.getElementById('sn-coach').value,num:document.getElementById('sn-num').value,good:document.getElementById('sn-good').value,next:document.getElementById('sn-next').value};const notes=await dbGet('session_notes')||[];notes.unshift(note);if(notes.length>20)notes.length=20;await dbSet('session_notes',notes);flash('notes-flash');await renderNotes();}
+async function renderNotes(){const notes=await dbGet('session_notes')||[],el=document.getElementById('notes-list');if(!notes.length){el.innerHTML='<p style="font-size:12px;color:var(--light);">No notes yet.</p>';return;}el.innerHTML=notes.map(n=>`<div class="note-item"><div class="note-meta"><strong>${n.coach||'Coach'} — ${n.tier}</strong><span>${formatDate(n.date)||'No date'} · ${n.num||'?'} juniors</span></div>${n.good?`<p>✅ ${n.good}</p>`:''}${n.next?`<p>➡️ Next: ${n.next}</p>`:''}</div>`).join('');}
+
+// ── SQUAD OVERVIEW ──
+let overviewFilter='all';
+function filterOverview(f){overviewFilter=f;['all','gold','silver','bronze'].forEach(x=>{const btn=document.getElementById(`ovr-${x}`);if(!btn)return;if(x===f){btn.style.background='var(--blue)';btn.style.color='white';}else{const styles={all:'',gold:'background:#fdf3d8;color:#9a7020;',silver:'background:#e0e7ef;color:var(--silver);',bronze:'background:#f5ece0;color:var(--bronze);'};btn.setAttribute('style',styles[x]+'border:none;');}});renderOverview();}
+function renderOverview(){
+  const el=document.getElementById('overview-content');if(!el)return;
+  const allTests=[...BENCH_TESTS.golf,...BENCH_TESTS.physical];
+  const squads=overviewFilter==='all'?['Gold Squad','Silver Squad','Bronze Squad']:[overviewFilter.charAt(0).toUpperCase()+overviewFilter.slice(1)+' Squad'];
+  let html='';
+  squads.forEach(squad=>{
+    const juniors=allProfiles.filter(p=>p.tier&&p.tier.includes(squad.split(' ')[0]));
+    if(!juniors.length)return;
+    const cls=squad.includes('Gold')?'gold':squad.includes('Silver')?'silver':'bronze';
+    const icon=squad.includes('Gold')?'🥇':squad.includes('Silver')?'🥈':'🥉';
+    html+=`<div class="card ${cls}" style="margin-bottom:20px;overflow-x:auto;"><h3>${icon} ${squad} <span style="font-weight:400;font-size:11px;color:var(--mid);">(${juniors.length} junior${juniors.length>1?'s':''})</span></h3><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px;"><thead><tr><th style="text-align:left;padding:8px 10px;border-bottom:2px solid #eee;white-space:nowrap;">Junior</th>`;
+    allTests.forEach(t=>{html+=`<th style="text-align:center;padding:8px 6px;border-bottom:2px solid #eee;white-space:nowrap;font-size:10px;">${t.label.replace(' Challenge','').replace(' Skills','')}</th>`;});
+    html+=`</tr></thead><tbody>`;
+    const squadTotals={};allTests.forEach(t=>{squadTotals[t.key]=[];});
+    juniors.forEach(p=>{
+      html+=`<tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:8px 10px;font-weight:700;white-space:nowrap;">${p.name}</td>`;
+      allTests.forEach(t=>{
+        const logs=p.benchLogs?.[t.key]||[];const latest=logs.length?logs[logs.length-1]:null;const first=logs.length>1?logs[0]:null;
+        if(!latest||!latest.level){html+=`<td style="text-align:center;padding:6px;color:#ccc;">—</td>`;return;}
+        const band=getBand(latest.level);let delta='';
+        if(first&&first.level){const diff=latest.level-first.level;if(diff>0)delta=`<div style="font-size:9px;color:#1a6b3c;">▲${diff}</div>`;else if(diff<0)delta=`<div style="font-size:9px;color:#c0392b;">▼${Math.abs(diff)}</div>`;}
+        squadTotals[t.key].push(latest.level);
+        html+=`<td style="text-align:center;padding:6px;"><span class="bench-badge ${band?.cls||''}" style="font-size:10px;padding:2px 6px;">L${latest.level}</span>${delta}</td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`<tr style="background:#f8f8f8;font-weight:800;"><td style="padding:8px 10px;font-size:11px;color:var(--mid);">Group Avg</td>`;
+    allTests.forEach(t=>{const vals=squadTotals[t.key];if(!vals.length){html+=`<td style="text-align:center;color:#ccc;">—</td>`;return;}const avg=(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1);html+=`<td style="text-align:center;font-size:11px;color:var(--blue);">${avg}</td>`;});
+    html+=`</tr></tbody></table></div></div>`;
+  });
+  if(!html)html='<p style="font-size:12px;color:var(--light);">No juniors found. Add profiles first.</p>';
+  el.innerHTML=html;
+}
+
+// ── RESET ──
+async function resetAll(){if(!confirm('Reset ALL St Michael\'s data? This cannot be undone.'))return;const keys=['planner_bronze','planner_silver','planner_gold','profiles','session_notes','term_details','mental_qs','curriculum','chk_texts_setup','chk_state_setup','chk_texts_do','chk_state_do','chk_texts_avoid','chk_state_avoid'];for(const key of keys){try{await sb.from('jdp_data').delete().eq('key',k(key));}catch(e){}}location.reload();}
+
+// ── AI REPORT ──
+let currentReportProfile=null;
+function buildReportPrompt(p){
+  const allTests=[...BENCH_TESTS.golf,...BENCH_TESTS.physical];
+  let benchLines=[];
+  allTests.forEach(t=>{const logs=p.benchLogs?.[t.key]||[];if(!logs.length)return;const latest=logs[logs.length-1];const first=logs[0];const band=latest.level?getBand(latest.level):null;let line=`  - ${t.label}: Level ${latest.level||'N/A'}${band?' ('+band.label+')':''}`;if(logs.length>1&&first.level&&latest.level){const diff=latest.level-first.level;if(diff!==0)line+=` — ${diff>0?'improved by '+diff:'decreased by '+Math.abs(diff)} level${Math.abs(diff)>1?'s':''}`;}benchLines.push(line);});
+  let mentalLines=[];if(p.mentalRatings){DEF.mental.forEach((q,i)=>{const stars=p.mentalRatings[i]||0;mentalLines.push(`  - "${q}": ${stars}/5 stars`);});}
+  let ocLines=[];
+  if(p.oc){if(p.tier?.includes('Gold')){p.oc.stages.forEach((s,i)=>{if(s.score)ocLines.push(`  - Stage ${i+1} (${STM_STAGES[i].dist}): Score ${s.score}${s.passed?' ✅ Passed':' (not yet passed)'}`);});if(p.oc.nineHoleLogs?.length){const best=Math.min(...p.oc.nineHoleLogs.map(r=>r.score));ocLines.push(`  - Best 9-hole score: ${best} shots`);}}else if(p.tier?.includes('Silver')&&p.oc.silverNotes){ocLines.push(`  - Notes: ${p.oc.silverNotes}`);}else if(p.oc.bronzeNotes){ocLines.push(`  - Notes: ${p.oc.bronzeNotes}`);}}
+  return`You are a warm, encouraging junior golf coach at St Michael's Golf Club in Sydney, Australia, writing an end-of-term report for a parent.\n\nWrite a personalised end-of-term report for the following junior. The report should:\n- Be written directly to the parent\n- Use the junior's first name throughout\n- Have 4 clear sections: (1) Overview & Highlights, (2) Skills & Benchmarking, (3) Mental Game & Attitude, (4) Goals & Next Steps\n- Be warm, specific, encouraging, and professional\n- Be approximately 300–400 words\n- End with a positive sign-off mentioning St Michael's Golf Club JDP\n\nJUNIOR DETAILS:\n- Name: ${p.name}\n- Squad: ${p.tier||'—'}\n- Handicap: ${p.hcp||'Not yet established'}\n- Goal: ${p.goal||'Not specified'}\n- Medical: ${p.medical||'None'}\n\nBENCHMARK RESULTS:\n${benchLines.length?benchLines.join('\n'):'  No benchmark data recorded yet.'}\n\nMENTAL GAME RATINGS (out of 5):\n${mentalLines.length?mentalLines.join('\n'):'  Not yet assessed.'}\n\nMENTAL GAME REFLECTIONS:\n  - What they want to do more of: ${p.mentalMore||'Not recorded'}\n  - What they want to do less of: ${p.mentalLess||'Not recorded'}\n  - What they learned about themselves: ${p.mentalLearn||'Not recorded'}\n\nON-COURSE ASSESSMENT:\n${ocLines.length?ocLines.join('\n'):'  No on-course data recorded yet.'}\n\nWrite the report now. Use plain text only (no markdown, no asterisks, no bullet points — just paragraph text with clear section headings on their own lines).`;}
+
+async function generateReport(){
+  const id=document.getElementById('j-id').value;if(!id){alert('Please select and save a junior profile first.');return;}
+  const p=allProfiles.find(x=>String(x.id)===String(id));if(!p){alert('Profile not found. Please save first.');return;}
+  currentReportProfile=p;openReportModal(p);await callReportAPI(p);
+}
+function openReportModal(p){const modal=document.getElementById('report-modal');document.getElementById('report-modal-name').textContent=`${p.name} · ${p.tier||'—'}`;document.getElementById('report-email-display').textContent=p.pemail||'No email on file';document.getElementById('report-loading').style.display='flex';document.getElementById('report-output').style.display='none';document.getElementById('report-error').style.display='none';modal.classList.add('open');document.body.style.overflow='hidden';}
+async function callReportAPI(p){
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:buildReportPrompt(p)}]})});
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`API error ${res.status}`);}
+    const data=await res.json();const text=data.content?.find(b=>b.type==='text')?.text||'';if(!text)throw new Error('No report text returned.');
+    document.getElementById('report-text').textContent=text;document.getElementById('report-loading').style.display='none';document.getElementById('report-output').style.display='block';
+  }catch(err){document.getElementById('report-loading').style.display='none';document.getElementById('report-error').style.display='block';document.getElementById('report-error').innerHTML=`<strong>⚠️ Report generation failed</strong><br><br>${err.message}<br><br>Please check your internet connection and try again.`;}
+}
+async function regenerateReport(){if(!currentReportProfile)return;document.getElementById('report-loading').style.display='flex';document.getElementById('report-output').style.display='none';document.getElementById('report-error').style.display='none';await callReportAPI(currentReportProfile);}
+async function copyReport(){const text=document.getElementById('report-text').textContent;try{await navigator.clipboard.writeText(text);flash('copy-flash');}catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);flash('copy-flash');}}
+function closeReport(){document.getElementById('report-modal').classList.remove('open');document.body.style.overflow='';}
+function closeReportIfBg(e){if(e.target===document.getElementById('report-modal'))closeReport();}
+
+// ── SMART TEMPLATE REPORT ──
+function hideTemplateReport(){const wrap=document.getElementById('template-report-wrap');if(wrap){wrap.classList.remove('visible');wrap.style.display='none';}}
+function generateTemplateReport(){
+  const id=document.getElementById('j-id').value;if(!id){alert('Please save the junior profile first.');return;}
+  const p=allProfiles.find(x=>String(x.id)===String(id));if(!p){alert('Junior not found.');return;}
+  const text=buildSTMTemplateReport(p);
+  document.getElementById('template-report-name').textContent=p.name;
+  document.getElementById('template-report-body').textContent=text;
+  const wrap=document.getElementById('template-report-wrap');wrap.classList.add('visible');wrap.style.display='block';
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function buildSTMTemplateReport(p){
+  const firstName=p.name?p.name.split(' ')[0]:p.name;
+  const g=p.gender==='F'?'she':'he';const gHis=p.gender==='F'?'her':'his';const gHer=p.gender==='F'?'her':'him';
+  const squad=p.tier||'Bronze Squad';const parent=p.parent?p.parent.split(' ')[0]:'there';
+  const allTests=[...BENCH_TESTS.golf,...BENCH_TESTS.physical];
+  const improved=[],strong=[],allLogged=[];
+  allTests.forEach(t=>{const logs=(p.benchLogs||{})[t.key];if(!logs||!logs.length)return;const latest=logs[logs.length-1];const first=logs.length>1?logs[0]:null;if(!latest.level)return;const band=getBand(latest.level);const entry={label:t.label,level:latest.level,band:band?band.label:''};allLogged.push(entry);if(first&&first.level&&latest.level>first.level){entry.from=first.level;improved.push(entry);}else if(latest.level>=7){strong.push(entry);}});
+  const mentalRatings=p.mentalRatings||{};let mentalTotal=0,mentalCount=0;Object.keys(mentalRatings).forEach(k=>{if(mentalRatings[k]>0){mentalTotal+=mentalRatings[k];mentalCount++;}});const mentalAvg=mentalCount>0?(mentalTotal/mentalCount):0;
+  let mentalSummary='';
+  if(mentalAvg>=4)mentalSummary=`${firstName} consistently demonstrated a strong mental approach throughout the term, showing composure and focus in practice situations.`;
+  else if(mentalAvg>=3)mentalSummary=`${firstName} showed a positive mental approach during the term, with good awareness of ${gHis} mindset during practice.`;
+  else if(mentalAvg>0)mentalSummary=`${firstName} is developing ${gHis} mental game awareness, which will be a great focus area as ${g} continues to grow.`;
+  if(p.mentalMore)mentalSummary+=` One strength ${g} identified was: "${p.mentalMore}".`;
+  let ocSummary='';
+  if(p.oc){if(squad.includes('Gold')&&p.oc.stages){const passed=p.oc.stages.filter(s=>s.passed);if(passed.length>0){ocSummary=`${firstName} passed ${passed.length} of 4 on-course stages this term`;if(p.oc.nineHoleLogs&&p.oc.nineHoleLogs.length){const best=Math.min(...p.oc.nineHoleLogs.map(r=>r.score));ocSummary+=`, with a best 9-hole score of ${best} shots`;}ocSummary+='.';}else if(p.oc.nineHoleLogs&&p.oc.nineHoleLogs.length){const best=Math.min(...p.oc.nineHoleLogs.map(r=>r.score));ocSummary=`${firstName} has been getting out on course, recording a best 9-hole score of ${best} shots this term.`;}}else if(squad.includes('Silver')&&p.oc.silverNotes){ocSummary=`On course, ${p.oc.silverNotes}`;}else if(p.oc.bronzeNotes){ocSummary=`On course, ${p.oc.bronzeNotes}`;}}
+  const lines=[];
+  lines.push(`Dear ${parent},`);lines.push('');
+  const openings=[`It has been a pleasure coaching ${firstName} this term in our ${squad} program at St Michael's Golf Club.`,`What a wonderful term it has been for ${firstName} in our ${squad} here at St Michael's Golf Club.`,`I am delighted to share ${firstName}'s end of term report from our ${squad} at St Michael's Golf Club.`];
+  let opening=openings[Math.floor(Math.random()*openings.length)];
+  if(p.goal)opening+=` ${firstName} came in with a clear goal in mind — "${p.goal}" — and ${g} has worked hard towards that throughout the term.`;
+  lines.push(opening);lines.push('');
+  if(allLogged.length>0){let benchPara='';if(improved.length>0){benchPara=`In our benchmarking assessments, ${firstName} showed some real improvement this term. `;const desc=improved.slice(0,3).map(e=>`${e.label} (now Level ${e.level} — ${e.band}, up from Level ${e.from})`);benchPara+=`${g.charAt(0).toUpperCase()+g.slice(1)} improved in ${desc.join(', ')}.`;}else if(strong.length>0){benchPara=`In our benchmarking assessments, ${firstName} is performing at a strong level. `;const desc=strong.slice(0,3).map(e=>`${e.label} (Level ${e.level} — ${e.band})`);benchPara+=`${g.charAt(0).toUpperCase()+g.slice(1)} is achieving ${desc.join(', ')}.`;}else{benchPara=`We completed ${firstName}'s benchmarking assessments this term, establishing some solid baseline levels across ${allLogged.length} test${allLogged.length>1?'s':''}. These results give us a great foundation to build on next term.`;}if(ocSummary)benchPara+=` ${ocSummary}`;lines.push(benchPara);lines.push('');}else if(ocSummary){lines.push(ocSummary);lines.push('');}
+  if(mentalSummary){let mental=mentalSummary;if(p.mentalLearn)mental+=` When reflecting on ${gHis} development, ${firstName} noted: "${p.mentalLearn}".`;lines.push(mental);lines.push('');}
+  let focusPara=`Looking ahead to next term, `;if(p.mentalLess){focusPara+=`one area we will continue to develop is ${p.mentalLess.toLowerCase()}. `;}else if(squad.includes('Bronze')){focusPara+=`we will continue building ${gHis} on-course confidence and core skills. `;}else if(squad.includes('Silver')){focusPara+=`we will focus on sharpening ${gHis} decision-making and short game consistency. `;}else{focusPara+=`we will continue pushing ${gHis} performance benchmarks and competition preparation. `;}
+  focusPara+=`With the effort and attitude ${firstName} has shown this term, I have no doubt ${g} will continue to grow as a golfer and as a person.`;
+  lines.push(focusPara);lines.push('');
+  lines.push(`Thank you for your continued support of ${firstName}'s golf journey — it makes a real difference. We look forward to seeing ${gHer} back on the course next term.`);
+  lines.push('');lines.push('Warm regards,');lines.push('Anthony Summers');lines.push("St Michael's Golf Club Junior Development Program");
+  return lines.join('\n');
+}
+function copyTemplateReport(){const text=document.getElementById('template-report-body').textContent;if(!text)return;navigator.clipboard.writeText(text).then(()=>{const btn=document.querySelector('.btn-copy-tmpl');const orig=btn.textContent;btn.textContent='✅ Copied!';setTimeout(()=>{btn.textContent=orig;},2000);}).catch(()=>alert('Could not copy automatically. Please select and copy the text manually.'));}
+
+// ── INIT ──
+async function init(){
+  try{
+    await sb.from('jdp_data').select('key').limit(1);
+    document.getElementById('sync-msg').textContent='Live sync on';
+    await Promise.all([buildChk('chk-setup','setup'),buildChk('chk-do','do'),buildChk('chk-avoid','avoid'),buildPlanner(),buildMental(),loadAllProfiles(),renderNotes(),loadCurriculum()]);
+    rebuildBench();updateOCSection();
+  }catch(e){
+    document.getElementById('sync-dot').className='sync-dot off';
+    document.getElementById('sync-msg').textContent='Database error';
+    console.error(e);
+  }
+  document.getElementById('loading').style.display='none';
+}
+init();
+</script>
+</body>
+</html>
