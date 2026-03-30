@@ -857,7 +857,7 @@ const BENCH_TESTS={
     {key:'putting',label:'Putting',unit:'Total putts (9 holes)',dual:false,inverse:true,scoreType:'putting',desc:'9 holes from 3-30ft. Count total putts. Lower = better.'},
     {key:'bunker',label:'Bunker',unit:'On green (L1–6) + Proximity ft (L7–10)',dual:true,f1:'On green (0-5)',f2:'Proximity (ft)',scoreType:'bunker',desc:'5 balls to target. L1-6: balls on green out of 5. L7-10: proximity of median ball in feet.'},
     {key:'oncourse',label:'On Course',unit:'Stage (1–4) or Score to par',dual:true,f1:'Stage (1-4)',f2:'Score to par',scoreType:'oncourse',desc:'L1-4: progressive tees, pass=36 shots. L5-10: members tees, score to par.'},
-    {key:'pitching',label:'Pitching',unit:'Level 1–10 (TBC)',dual:false,scoreType:'placeholder',desc:'Coming soon. Enter 1-10 manually.'},
+    {key:'pitching',label:'Pitching',unit:'Total distance from hole (feet)',dual:false,inverse:true,scoreType:'linear',thresholds:[250,200,160,140,120,100,80,60,40,25],desc:'Hit 5 shots — one each from 30, 40, 50, 60 and 70m to a hole. Record the total distance of all 5 balls from the hole in feet. Lower score is better.'},
   ],
   physical:[
     {key:'vertical_jump',label:'Vert Jump',unit:'cm',dual:false,inverse:false,scoreType:'linear',thresholds:[12,15,18,25,30,35,42,48,55,60],desc:'Standing reach vs jump height. 3 jumps, best in cm.'},
