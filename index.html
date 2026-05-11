@@ -696,6 +696,29 @@
       </div>
     </div>
 
+    <!-- COACH NOTES -->
+    <div class="profile-section blue" id="ps-notes">
+      <div class="profile-section-hdr" onclick="toggleProfileSection('notes')">
+        <div class="profile-section-title"><h3>📝 Coach Notes</h3><div class="profile-section-summary" id="ps-notes-summary">Tap to expand</div></div>
+        <span class="profile-section-chevron" id="ps-notes-chev">▼</span>
+      </div>
+      <div class="profile-section-body" id="ps-notes-body">
+        <p style="font-size:11px;color:var(--mid);margin-bottom:14px;margin-top:4px;">Add dated notes for this junior — observations, goals, parent conversations, anything worth tracking.</p>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:10px;">
+          <div class="fr" style="margin-bottom:0;">
+            <label>Date</label>
+            <input type="date" id="cn-date" style="font-size:13px;">
+          </div>
+        </div>
+        <div class="fr" style="margin-bottom:10px;">
+          <label>Note</label>
+          <textarea id="cn-text" rows="3" placeholder="e.g. Great session today — showing real improvement in short game. Parent mentioned they're keen to enter the club championship." style="font-size:13px;"></textarea>
+        </div>
+        <button class="btn-sm btn-sm-g" onclick="addCoachNote()" style="margin-bottom:16px;">+ Add Note</button>
+        <div id="cn-list"></div>
+      </div>
+    </div>
+
     <!-- MENTAL GAME -->
     <div class="profile-section elite" id="ps-mental">
       <div class="profile-section-hdr" onclick="toggleProfileSection('mental')">
@@ -1126,6 +1149,8 @@ function updateSectionSummaries(){
     else if(squad.includes('Silver')){ocSummEl.textContent=ocData.silverNotes?'Notes recorded':'No notes yet';}
     else{var passedB=ocData.stages.filter(function(s){return s.passed;}).length;var bestB=ocData.nineHoleLogs.length?Math.min.apply(null,ocData.nineHoleLogs.map(function(r){return r.score;})):null;var partsB=[];if(passedB>0)partsB.push(passedB+' of 4 stages passed');if(bestB)partsB.push('Best: '+bestB+' shots');ocSummEl.textContent=partsB.length?partsB.join(' · '):'No rounds logged yet';}
   }
+  var notesSummEl=document.getElementById('ps-notes-summary');
+  if(notesSummEl){var nc=(coachNotes||[]).length;notesSummEl.textContent=nc>0?nc+' note'+(nc>1?'s':'')+' logged':'No notes yet';}
   var repSummEl=document.getElementById('ps-report-summary');
   if(repSummEl){var hasProfile=document.getElementById('j-id')&&document.getElementById('j-id').value;repSummEl.textContent=hasProfile?'Tap to generate end of term report':'Save profile first to generate a report';}
 }
@@ -1231,6 +1256,7 @@ function showStickyBar(){var b=document.getElementById('sticky-save-bar');if(b)b
 function hideStickyBar(){var b=document.getElementById('sticky-save-bar');if(b)b.classList.remove('visible');}
 
 var benchLogs={};
+var coachNotes=[];
 function today(){return new Date().toISOString().slice(0,10);}
 function formatDate(d){if(!d)return'';var p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
 
@@ -1361,8 +1387,9 @@ function loadJuniorProfile(){
   if(p.oc)ocData=JSON.parse(JSON.stringify(p.oc));
   else ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:'',eliteNotes:'',privateNotes:''};
   updateOCSection();setMentalRatings(p.mentalRatings||{});updateMballTip();hideTemplateReport();updateStickyBarName();
+  coachNotes=p.coachNotes||[];renderCoachNotes();
   updateSectionSummaries();
-  ['oc','bench','mental','report'].forEach(function(id){var body=document.getElementById('ps-'+id+'-body');var chev=document.getElementById('ps-'+id+'-chev');if(body){body.classList.remove('open');}if(chev){chev.classList.remove('open');}});
+  ['oc','bench','notes','mental','report'].forEach(function(id){var body=document.getElementById('ps-'+id+'-body');var chev=document.getElementById('ps-'+id+'-chev');if(body){body.classList.remove('open');}if(chev){chev.classList.remove('open');}});
   window.scrollTo({top:document.getElementById('radar-wrap').offsetTop-80,behavior:'smooth'});
 }
 
@@ -1374,7 +1401,8 @@ function newJuniorForm(){
   benchLogs={};rebuildBench();var wrap=document.getElementById('radar-wrap');if(wrap)wrap.classList.remove('visible');
   ocData={stages:[{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false},{score:'',date:'',notes:'',passed:false}],nineHoleLogs:[],silverNotes:'',bronzeNotes:'',eliteNotes:'',privateNotes:''};
   updateOCSection();setMentalRatings({});updateMballTip();hideTemplateReport();updateStickyBarName();
-  ['oc','bench','mental','report'].forEach(function(id){var body=document.getElementById('ps-'+id+'-body');var chev=document.getElementById('ps-'+id+'-chev');if(body){body.classList.remove('open');}if(chev){chev.classList.remove('open');}});
+  coachNotes=[];renderCoachNotes();
+  ['oc','bench','notes','mental','report'].forEach(function(id){var body=document.getElementById('ps-'+id+'-body');var chev=document.getElementById('ps-'+id+'-chev');if(body){body.classList.remove('open');}if(chev){chev.classList.remove('open');}});
   updateSectionSummaries();
 }
 
@@ -1383,7 +1411,7 @@ function openVideo(){var url=document.getElementById('j-video').value;if(url)win
 async function saveProfile(){
   var name=document.getElementById('j-name').value.trim();if(!name){alert('Please enter a junior name.');return;}
   var existingId=document.getElementById('j-id').value;var oc=collectOCData();
-  var profile={id:existingId?Number(existingId):Date.now(),name:name,dob:document.getElementById('j-dob').value,gender:document.getElementById('j-gender').value,weight:document.getElementById('j-weight').value,hcp:document.getElementById('j-hcp').value,tier:document.getElementById('j-tier').value,parent:document.getElementById('j-parent').value,mobile:document.getElementById('j-mobile').value,emerg:document.getElementById('j-emerg').value,medical:document.getElementById('j-medical').value,goal:document.getElementById('j-goal').value,video:document.getElementById('j-video').value,pemail:document.getElementById('j-pemail').value,jemail:document.getElementById('j-jemail').value,mentalMore:document.getElementById('j-mental-more').value,mentalLess:document.getElementById('j-mental-less').value,mentalLearn:document.getElementById('j-mental-learn').value,mentalRatings:getMentalRatings(),benchLogs:JSON.parse(JSON.stringify(benchLogs)),oc:oc};
+  var profile={id:existingId?Number(existingId):Date.now(),name:name,dob:document.getElementById('j-dob').value,gender:document.getElementById('j-gender').value,weight:document.getElementById('j-weight').value,hcp:document.getElementById('j-hcp').value,tier:document.getElementById('j-tier').value,parent:document.getElementById('j-parent').value,mobile:document.getElementById('j-mobile').value,emerg:document.getElementById('j-emerg').value,medical:document.getElementById('j-medical').value,goal:document.getElementById('j-goal').value,video:document.getElementById('j-video').value,pemail:document.getElementById('j-pemail').value,jemail:document.getElementById('j-jemail').value,mentalMore:document.getElementById('j-mental-more').value,mentalLess:document.getElementById('j-mental-less').value,mentalLearn:document.getElementById('j-mental-learn').value,mentalRatings:getMentalRatings(),benchLogs:JSON.parse(JSON.stringify(benchLogs)),oc:oc,coachNotes:JSON.parse(JSON.stringify(coachNotes))};
   // preserve chsLogs from existing profile
   if(existingId){var existing=allProfiles.find(function(x){return String(x.id)===String(existingId);});if(existing)profile.chsLogs=existing.chsLogs||[];}
   if(existingId){var idx=-1;for(var i=0;i<allProfiles.length;i++){if(String(allProfiles[i].id)===String(existingId)){idx=i;break;}}if(idx>=0){profile.archived=allProfiles[idx].archived||false;allProfiles[idx]=profile;}else allProfiles.push(profile);}else{allProfiles.push(profile);}
@@ -1418,6 +1446,41 @@ function addProfileItem(list,p){
   item.onclick=function(){document.getElementById('junior-select').value=p.id;loadJuniorProfile();showTab('profiling',document.querySelector('[data-tab=profiling]'));};
   item.innerHTML='<div class="pav '+sc.key+'">'+sc.icon+'</div><div class="pinfo"><h4>'+p.name+'</h4><p>'+(p.tier||'—')+' · HCP: '+(p.hcp||'—')+' · '+(p.gender==='F'?'Female':'Male')+benchSummary+'</p></div><span class="badge '+sc.key+'">'+sc.short+'</span><span class="pdel" onclick="archiveProfile('+p.id+',event)" title="Archive" style="font-size:16px;">📦</span>';
   list.appendChild(item);
+}
+
+// ── COACH NOTES ──
+function renderCoachNotes(){
+  var el=document.getElementById('cn-list');if(!el)return;
+  if(!coachNotes.length){el.innerHTML='<p style="font-size:11px;color:var(--light);">No notes yet.</p>';return;}
+  var sorted=coachNotes.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});
+  var html='';
+  sorted.slice(0,10).forEach(function(n){
+    html+='<div style="background:#fafafa;border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid #eee;position:relative;">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">';
+    html+='<span style="font-size:11px;font-weight:800;color:var(--blue);">'+formatDate(n.date)+'</span>';
+    html+='<span onclick="deleteCoachNote('+n.id+')" style="cursor:pointer;color:#ccc;font-size:14px;padding:2px 4px;line-height:1;" title="Delete note">✕</span>';
+    html+='</div>';
+    html+='<p style="font-size:12px;color:var(--dark);line-height:1.6;white-space:pre-wrap;">'+n.text+'</p>';
+    html+='</div>';
+  });
+  if(sorted.length>10)html+='<p style="font-size:10px;color:var(--light);padding:4px 2px;">+ '+(sorted.length-10)+' earlier notes saved</p>';
+  el.innerHTML=html;
+}
+
+function addCoachNote(){
+  var text=document.getElementById('cn-text')?document.getElementById('cn-text').value.trim():'';
+  var date=document.getElementById('cn-date')?document.getElementById('cn-date').value:'';
+  if(!text){alert('Please enter a note before adding.');return;}
+  coachNotes.unshift({id:Date.now(),date:date||today(),text:text});
+  document.getElementById('cn-text').value='';
+  document.getElementById('cn-date').value=today();
+  renderCoachNotes();updateSectionSummaries();
+}
+
+function deleteCoachNote(id){
+  if(!confirm('Delete this note? This cannot be undone.'))return;
+  coachNotes=coachNotes.filter(function(n){return n.id!==id;});
+  renderCoachNotes();updateSectionSummaries();
 }
 
 // ── NOTES ──
@@ -1518,7 +1581,9 @@ async function resetAll(){if(!confirm('Reset ALL St Michael\'s data? This cannot
 var currentReportProfile=null;
 function buildReportPrompt(p){var benchLines=[];ALL_BENCH_TESTS.forEach(function(t){var logs=(p.benchLogs||{})[t.key]||[];if(!logs.length)return;var latest=logs[logs.length-1];var first=logs[0];var band=latest.level?getBand(latest.level):null;var line='  - '+t.label+': Level '+(latest.level||'N/A')+(band?' ('+band.label+')':'');if(logs.length>1&&first.level&&latest.level){var diff=latest.level-first.level;if(diff!==0)line+=' — '+(diff>0?'improved by '+diff:'decreased by '+Math.abs(diff))+' level'+(Math.abs(diff)>1?'s':'');}benchLines.push(line);});if(p.chsLogs&&p.chsLogs.length){var cl=p.chsLogs[p.chsLogs.length-1];var clv=calcCHSLevel(cl.mph,p.gender);if(clv){var cb=getBand(clv);var line='  - Club Head Speed: '+cl.mph+'mph — Level '+clv+(cb?' ('+cb.label+')':'');if(p.chsLogs.length>1){var cf=p.chsLogs[0];var cfv=calcCHSLevel(cf.mph,p.gender);if(cfv&&clv!==cfv)line+=' — '+(clv>cfv?'improved by '+(clv-cfv):'decreased by '+(cfv-clv))+' level'+(Math.abs(clv-cfv)>1?'s':'');}benchLines.push(line);}}var mentalLines=[];if(p.mentalRatings){DEF.mental.forEach(function(q,i){mentalLines.push('  - "'+q+'": '+(p.mentalRatings[i]||0)+'/5 stars');});}var ocLines=[];if(p.oc){if(p.tier==='Private'&&p.oc.privateNotes){ocLines.push('  - Notes: '+p.oc.privateNotes);}else{var isGoldOrElite=p.tier&&(p.tier.includes('Gold')||p.tier.includes('Elite'));if(isGoldOrElite&&p.oc.stages){p.oc.stages.forEach(function(s,i){if(s.score)ocLines.push('  - Stage '+(i+1)+' ('+STM_STAGES[i].dist+'): Score '+s.score+(s.passed?' ✅ Passed':' (not yet passed)'));});if(p.oc.nineHoleLogs&&p.oc.nineHoleLogs.length){var best=Math.min.apply(null,p.oc.nineHoleLogs.map(function(r){return r.score;}));ocLines.push('  - Best 9-hole score: '+best+' shots');}}else if(p.tier&&p.tier.includes('Silver')&&p.oc.silverNotes){ocLines.push('  - Notes: '+p.oc.silverNotes);}else if(p.oc.bronzeNotes){ocLines.push('  - Notes: '+p.oc.bronzeNotes);}}}
 var context=p.tier==='Private'?'a private coaching student (outside the JDP program) at St Michael\'s Golf Club in Sydney, Australia':'a junior golfer in the '+p.tier+' at St Michael\'s Golf Club Junior Development Program in Sydney, Australia';
-return 'You are a warm, encouraging golf coach writing an end-of-term progress report for a parent.\n\nSTUDENT DETAILS:\n- Name: '+p.name+'\n- Context: '+context+'\n- Handicap: '+(p.hcp||'Not yet established')+'\n- Goal: '+(p.goal||'Not specified')+'\n\nBENCHMARK RESULTS:\n'+(benchLines.length?benchLines.join('\n'):'  No benchmark data recorded yet.')+'\n\nMENTAL GAME RATINGS:\n'+(mentalLines.length?mentalLines.join('\n'):'  Not yet assessed.')+'\n\nMENTAL GAME REFLECTIONS:\n  - More of: '+(p.mentalMore||'Not recorded')+'\n  - Less of: '+(p.mentalLess||'Not recorded')+'\n  - Learned: '+(p.mentalLearn||'Not recorded')+'\n\nON-COURSE / LESSON NOTES:\n'+(ocLines.length?ocLines.join('\n'):'  None recorded.')+'\n\nWrite the report now. Use plain text only.';}
+return 'You are a warm, encouraging golf coach writing an end-of-term progress report for a parent.\n\nSTUDENT DETAILS:\n- Name: '+p.name+'\n- Context: '+context+'\n- Handicap: '+(p.hcp||'Not yet established')+'\n- Goal: '+(p.goal||'Not specified')+'\n\nBENCHMARK RESULTS:\n'+(benchLines.length?benchLines.join('\n'):'  No benchmark data recorded yet.')+'\n\nMENTAL GAME RATINGS:\n'+(mentalLines.length?mentalLines.join('\n'):'  Not yet assessed.')+'\n\nMENTAL GAME REFLECTIONS:\n  - More of: '+(p.mentalMore||'Not recorded')+'\n  - Less of: '+(p.mentalLess||'Not recorded')+'\n  - Learned: '+(p.mentalLearn||'Not recorded')+'\n\nON-COURSE / LESSON NOTES:\n'+(ocLines.length?ocLines.join('\n'):'  None recorded.')
++'\n\nCOACH NOTES (last 90 days):\n'+(function(){var cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);var recent=(p.coachNotes||[]).filter(function(n){return!n.date||new Date(n.date)>=cutoff;}).slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});return recent.length?recent.map(function(n){return'  - '+(n.date?formatDate(n.date)+': ':'')+n.text;}).join('\n'):'  None in the last 90 days.';}())
++'\n\nWrite the report now. Use plain text only.';}
 async function generateReport(){var id=document.getElementById('j-id').value;if(!id){alert('Please select and save a profile first.');return;}var p=null;for(var i=0;i<allProfiles.length;i++){if(String(allProfiles[i].id)===String(id)){p=allProfiles[i];break;}}if(!p){alert('Profile not found.');return;}currentReportProfile=p;openReportModal(p);await callReportAPI(p);}
 function openReportModal(p){var modal=document.getElementById('report-modal');document.getElementById('report-modal-name').textContent=p.name+' · '+(p.tier||'—');document.getElementById('report-email-display').textContent=p.pemail||'No email on file';document.getElementById('report-loading').style.display='flex';document.getElementById('report-output').style.display='none';document.getElementById('report-error').style.display='none';modal.classList.add('open');document.body.style.overflow='hidden';}
 async function callReportAPI(p){try{var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:buildReportPrompt(p)}]})});if(!res.ok){var err=await res.json().catch(function(){return{};});throw new Error((err&&err.error&&err.error.message)||'API error '+res.status);}var data=await res.json();var text='';for(var i=0;i<(data.content||[]).length;i++){if(data.content[i].type==='text'){text=data.content[i].text;break;}}if(!text)throw new Error('No report text returned.');document.getElementById('report-text').textContent=text;document.getElementById('report-loading').style.display='none';document.getElementById('report-output').style.display='block';}catch(err){document.getElementById('report-loading').style.display='none';document.getElementById('report-error').style.display='block';document.getElementById('report-error').innerHTML='<strong>⚠️ Report generation failed</strong><br><br>'+err.message;}}
@@ -1562,6 +1627,7 @@ async function init(){
     document.getElementById('sync-msg').textContent='Live sync on';
     await Promise.all([buildChk('chk-setup','setup'),buildChk('chk-do','do'),buildChk('chk-avoid','avoid'),buildMental(),loadAllProfiles(),renderNotes(),loadCurriculum(),loadCoaches(),loadDrills()]);
     await buildPlanner();buildSSProtocol();rebuildBench();updateOCSection();renderDashboard();
+    var cnDate=document.getElementById('cn-date');if(cnDate)cnDate.value=today();
     updateSectionSummaries();
     var nameField=document.getElementById('j-name');if(nameField)nameField.addEventListener('input',updateStickyBarName);
   }catch(e){
