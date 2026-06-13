@@ -887,13 +887,13 @@ const BENCH_TESTS={
     {key:'situp_throw',label:'Sit-Up & Throw',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[1.5,1.8,2.1,3,3.6,4.2,5.1,5.7,6.6,7.2],mball:true,desc:'Medicine ball throw from floor. 3 throws, longest in metres.'},
     {key:'chest_pass',label:'Chest Pass',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[1.5,1.8,2.1,3,3.6,4.2,5.1,5.7,6.6,7.2],mball:true,desc:'Seated chest pass. 3 throws, longest in metres.'},
     {key:'shuttle_run',label:'Shuttle Run',unit:'seconds',dual:false,inverse:true,scoreType:'linear',thresholds:[13.3,12.8,12.2,11.9,11.5,11.1,10.6,10.2,9.9,9.5],desc:'Two lines 30ft apart. Lower time = better.'},
-    {key:'shotput_left',label:'Shotput L',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[2,2.5,3,4.5,5.4,6.3,7.5,9,9.9,10.8],mball:true,desc:'Rotational throw from left side. 3 throws, best in metres.'},
-    {key:'shotput_right',label:'Shotput R',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[2,2.5,3,4.5,5.4,6.3,7.5,9,9.9,10.8],mball:true,desc:'Rotational throw from right side. 3 throws, best in metres.'},
+    {key:'shotput_left',label:'Rotational Throw L',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[3,4,5,6,8,10,12,14,16,18],mball:true,desc:'Rotational throw from left side. 3 throws, best in metres.'},
+    {key:'shotput_right',label:'Rotational Throw R',unit:'metres',dual:false,inverse:false,scoreType:'linear',thresholds:[3,4,5,6,8,10,12,14,16,18],mball:true,desc:'Rotational throw from right side. 3 throws, best in metres.'},
   ]
 };
 const ALL_BENCH_TESTS=BENCH_TESTS.golf.concat(BENCH_TESTS.physical);
 const RADAR_GOLF=[{key:'long_drive',label:'Long Drive'},{key:'aussie_rules',label:'Aussie Rules'},{key:'chipping',label:'Chipping'},{key:'putting',label:'Putting'},{key:'bunker',label:'Bunker'},{key:'pitching',label:'Pitching'},{key:'oncourse',label:'On Course'}];
-const RADAR_PHYSICAL=[{key:'vertical_jump',label:'Vert Jump'},{key:'situp_throw',label:'Sit-Up & Throw'},{key:'chest_pass',label:'Chest Pass'},{key:'shuttle_run',label:'Shuttle Run'},{key:'shotput_left',label:'Shotput L'},{key:'shotput_right',label:'Shotput R'}];
+const RADAR_PHYSICAL=[{key:'vertical_jump',label:'Vert Jump'},{key:'situp_throw',label:'Sit-Up & Throw'},{key:'chest_pass',label:'Chest Pass'},{key:'shuttle_run',label:'Shuttle Run'},{key:'shotput_left',label:'Rot Throw L'},{key:'shotput_right',label:'Rot Throw R'}];
 const OV_TESTS=[
   {key:'long_drive',label:'Long Drive',cat:'golf'},{key:'aussie_rules',label:'Aussie Rules',cat:'golf'},
   {key:'chipping',label:'Chipping',cat:'golf'},{key:'putting',label:'Putting',cat:'golf'},
@@ -901,7 +901,7 @@ const OV_TESTS=[
   {key:'bunker',label:'Bunker',cat:'golf'},{key:'oncourse',label:'On Course',cat:'golf'},
   {key:'vertical_jump',label:'Vert Jump',cat:'physical'},{key:'situp_throw',label:'Sit-Up Throw',cat:'physical'},
   {key:'chest_pass',label:'Chest Pass',cat:'physical'},{key:'shuttle_run',label:'Shuttle',cat:'physical'},
-  {key:'shotput_left',label:'Shotput L',cat:'physical'},{key:'shotput_right',label:'Shotput R',cat:'physical'},
+  {key:'shotput_left',label:'Rot Throw L',cat:'physical'},{key:'shotput_right',label:'Rot Throw R',cat:'physical'},
 ];
 
 var livePlannerData={bronze:null,silver:null,gold:null,elite:null};
