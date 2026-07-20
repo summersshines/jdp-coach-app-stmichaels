@@ -27,6 +27,13 @@
   .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   #loading p{font-size:14px;opacity:.8;}
+  #login-gate{position:fixed;inset:0;background:rgba(13,26,58,.95);display:none;align-items:center;justify-content:center;z-index:1000;}
+  .login-box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.3);}
+  .login-box h2{font-size:17px;font-weight:800;color:var(--blue);margin-bottom:4px;}
+  .login-box p{font-size:12px;color:var(--mid);margin-bottom:20px;}
+  .login-error{color:#c0392b;font-size:12px;margin-top:-6px;margin-bottom:8px;display:none;}
+  .btn-signout{background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;}
+  .btn-signout:hover{background:rgba(255,255,255,.25);}
   .tabs{display:flex;background:#0d1e3a;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:56px;z-index:99;}
   .tabs::-webkit-scrollbar{display:none;}
   .tab{padding:13px 16px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;transition:all .2s;-webkit-tap-highlight-color:transparent;}
@@ -335,6 +342,17 @@
 </style>
 </head>
 <body>
+<div id="login-gate">
+  <div class="login-box">
+    <h2>Coach Sign In</h2>
+    <p>St Michael's Golf Club — JDP</p>
+    <div class="fr"><label>Email</label><input type="email" id="lg-email" placeholder="coach@example.com" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fr"><label>Password</label><input type="password" id="lg-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn" style="width:100%;margin-bottom:12px;" onclick="doLogin()">Sign In</button>
+    <div style="text-align:center;"><a href="#" onclick="doForgotPassword();return false;" style="font-size:12px;color:var(--blue);">Forgot password?</a></div>
+  </div>
+</div>
 <div id="loading"><div class="spinner"></div><p>Connecting to shared database…</p></div>
 
 <!-- REPORT MODAL -->
@@ -369,6 +387,7 @@
   </div>
   <div class="hdr-right">
     <div class="save-ind" id="save-ind"><span class="sync-dot" id="sync-dot"></span><span id="sync-msg">Connecting…</span></div>
+    <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
   </div>
 </div>
 <div class="tabs">
@@ -845,6 +864,43 @@ const CLUB='stm';
 const SURL='https://dejmkfbzbqtvqgxtwipv.supabase.co';
 const SKEY='sb_publishable_zLIVnPYNxlyyAsYrkq9LJg_ztRZaJFp';
 const sb=supabase.createClient(SURL,SKEY);
+var _appInitialised=false;
+function checkAuthAndInit(){
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session){
+      document.getElementById('login-gate').style.display='none';
+      if(!_appInitialised){_appInitialised=true;init();}
+    }else{
+      document.getElementById('loading').style.display='none';
+      document.getElementById('login-gate').style.display='flex';
+    }
+  });
+}
+sb.auth.onAuthStateChange(function(event,session){
+  if(event==='SIGNED_IN'){
+    document.getElementById('login-gate').style.display='none';
+    document.getElementById('loading').style.display='flex';
+    if(!_appInitialised){_appInitialised=true;init();}
+  }else if(event==='SIGNED_OUT'){
+    _appInitialised=false;
+    document.getElementById('login-gate').style.display='flex';
+  }
+});
+async function doLogin(){
+  var email=document.getElementById('lg-email').value.trim();
+  var pass=document.getElementById('lg-pass').value;
+  var err=document.getElementById('login-error');
+  err.style.display='none';
+  var r=await sb.auth.signInWithPassword({email:email,password:pass});
+  if(r.error){err.textContent=r.error.message;err.style.display='block';}
+}
+async function doForgotPassword(){
+  var email=document.getElementById('lg-email').value.trim();
+  if(!email){alert('Enter your email address first.');return;}
+  var r=await sb.auth.resetPasswordForEmail(email);
+  if(r.error){alert('Error: '+r.error.message);}else{alert('Password reset email sent.');}
+}
+async function doSignOut(){await sb.auth.signOut();}
 function k(key){return CLUB+'_'+key;}
 
 const SQUADS=[
@@ -1635,7 +1691,7 @@ async function init(){
   }
   document.getElementById('loading').style.display='none';
 }
-init();
+checkAuthAndInit();
 </script>
 </body>
 </html>
