@@ -879,8 +879,7 @@ function checkAuthAndInit(){
 sb.auth.onAuthStateChange(function(event,session){
   if(event==='SIGNED_IN'){
     document.getElementById('login-gate').style.display='none';
-    document.getElementById('loading').style.display='flex';
-    if(!_appInitialised){_appInitialised=true;init();}
+    if(!_appInitialised){document.getElementById('loading').style.display='flex';_appInitialised=true;init();}
   }else if(event==='SIGNED_OUT'){
     _appInitialised=false;
     document.getElementById('login-gate').style.display='flex';
